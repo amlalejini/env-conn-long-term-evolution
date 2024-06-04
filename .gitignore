@@ -30,3 +30,17 @@
 *.exe
 *.out
 *.app
+
+pyenv/
+venv/
+local/
+
+*.cfg
+debug_file
+
+.DS_Store
+.vscode
+
+__pycache__
+
+*.csv
