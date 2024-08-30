@@ -1,3 +1,4 @@
-[submodule "third-party/avida"]
-	path = third-party/avida
-	url = https://github.com/devosoft/avida.git
+[submodule "third-party/avida-empirical"]
+	path = third-party/avida-empirical
+	url = https://github.com/amlalejini/avida-empirical.git
+	branch = 2024-env-conn
