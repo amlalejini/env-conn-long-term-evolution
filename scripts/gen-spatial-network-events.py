@@ -8,6 +8,9 @@ import graph_utilities as gutils
 import argparse
 import os
 
+def GenClearConnectionsCmd(trigger_str:str = "u begin"):
+    return f"{trigger_str} DisconnectCellsAll"
+
 def GenDisconnectCmd(pos_1, pos_2, trigger_str:str = "u begin"):
     '''
     Disconnect two positions given as x,y coordinates.
@@ -50,7 +53,8 @@ def main():
     all_positions = [(x, y) for x in range(args.world_x) for y in range(args.world_y)]
 
     # Generate commands to disconnect all grid cells
-    disconnect_all_cmds = GenDisconnectAllCmds(all_positions, "u begin")
+    #GenDisconnectAllCmds(all_positions, "u begin")
+    disconnect_all_cmds = GenClearConnectionsCmd("u begin")
 
     in_graph = None
     if args.graph_format == "edges":
