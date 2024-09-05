@@ -8,6 +8,7 @@ Many of the functions from this are copied / adapted from those in this reposito
 
 import random
 import networkx as nx
+import matplotlib.pyplot as plt
 
 def gen_graph_well_mixed(nodes: int):
     """
@@ -231,3 +232,54 @@ def gen_graph_random_geometric(nodes:int, radius:float, dimension:int, seed:int 
     """
     graph = nx.random_geometric_graph()
     return graph
+
+def gen_graph_clique_ring(clique_size:int, clique_count:int, nodes_between_cliques:int = 0):
+    '''
+    Function generates a ring of k-cliques.
+    Atributes
+        clique_size (int): Size of each clique in the ring
+        clique_count (int): Number of cliques in the ring
+        nodes_between_cliques (int): Number of nodes between cliques in the ring
+    '''
+    cliques = [ [(c * clique_size) + k for k in range(clique_size)] for c in range(clique_count)]
+    next_node_id = (clique_count * clique_size)
+    graph = nx.Graph()
+    # Add each clique to graph
+    for clique_id in range(len(cliques)):
+        clique_nodes = cliques[clique_id]
+        graph.add_nodes_from(clique_nodes)
+        graph.add_edges_from([(node_j, node_i) for node_i in clique_nodes for node_j in clique_nodes if node_i != node_j])
+        # Add all clique nodes, connect them to one another.
+        # for node_id in clique_nodes:
+        #     graph.add_node()
+    # Connect cliques together
+    for clique_id in range(len(cliques)):
+        next_clique_id = (clique_id + 1) % len(cliques)
+        cur_clique_conn_point = random.choice(cliques[clique_id])
+        next_clique_conn_point = random.choice(cliques[next_clique_id])
+        # If no nodes between cliques, add edge from curren to next.
+        if nodes_between_cliques == 0:
+            graph.add_edge(cur_clique_conn_point, next_clique_conn_point)
+        else:
+            # Add between-clique nodes one-by-one
+            prev_node = cur_clique_conn_point
+            for _ in range(nodes_between_cliques):
+                graph.add_node(next_node_id)
+                graph.add_edge(prev_node, next_node_id)
+                prev_node = next_node_id
+                next_node_id += 1
+            graph.add_edge(prev_node, next_clique_conn_point)
+
+    # print(graph.nodes)
+    # print(graph.edges)
+
+    # print(cliques)
+    # print(next_node_id)
+    return graph
+
+
+
+    # [(j, i) for i in range(nodes) for j in range(i) if i != j]
+# g = gen_graph_clique_ring(5, 4, 5)
+# nx.draw(g, pos = nx.kamada_kawai_layout(g),  with_labels = True)
+# plt.show()
