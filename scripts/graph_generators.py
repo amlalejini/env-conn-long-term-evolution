@@ -249,9 +249,6 @@ def gen_graph_clique_ring(clique_size:int, clique_count:int, nodes_between_cliqu
         clique_nodes = cliques[clique_id]
         graph.add_nodes_from(clique_nodes)
         graph.add_edges_from([(node_j, node_i) for node_i in clique_nodes for node_j in clique_nodes if node_i != node_j])
-        # Add all clique nodes, connect them to one another.
-        # for node_id in clique_nodes:
-        #     graph.add_node()
     # Connect cliques together
     for clique_id in range(len(cliques)):
         next_clique_id = (clique_id + 1) % len(cliques)
@@ -269,17 +266,140 @@ def gen_graph_clique_ring(clique_size:int, clique_count:int, nodes_between_cliqu
                 prev_node = next_node_id
                 next_node_id += 1
             graph.add_edge(prev_node, next_clique_conn_point)
+    return graph
 
+def _build_clique_ring_internal(
+        clique_size: int,
+        clique_count: int,
+        nodes_between_cliques: int = 0,
+        start_id: int = 0
+    ):
+    '''
+    helper function for gen_graph_hierarhical_clique_ring
+    '''
+    # Generate clique node ids (per-clique)
+    cliques = [ [((c * clique_size) + k) + start_id for k in range(clique_size)] for c in range(clique_count)]
+    # Generate clique edges
+    edges = [[clique_nodes[i], clique_nodes[j]] for clique_nodes in cliques for i in range(0, len(clique_nodes)) for j in range(i+1, len(clique_nodes))]
+    next_node_id = start_id + (clique_count * clique_size)
+    all_nodes = [node for clique in cliques for node in clique]
+    # Connect cliques together
+    for clique_id in range(len(cliques)):
+        next_clique_id = (clique_id + 1) % len(cliques)
+        cur_clique_conn_point = random.choice(cliques[clique_id])
+        next_clique_conn_point = random.choice(cliques[next_clique_id])
+        # If no nodes between cliques, add edge from curren to next.
+        if nodes_between_cliques == 0:
+            edges.append((cur_clique_conn_point, next_clique_conn_point))
+        else:
+            # Add between-clique nodes one-by-one
+            prev_node = cur_clique_conn_point
+            for _ in range(nodes_between_cliques):
+                all_nodes.append(next_node_id)
+                edges.append((prev_node, next_node_id))
+                prev_node = next_node_id
+                next_node_id += 1
+            edges.append((prev_node, next_clique_conn_point))
+    return {"nodes": all_nodes, "edges": edges}
+
+
+def gen_graph_hierarchical_clique_ring(
+    clique_size:int,
+    community_count:int,
+    layers: int = 0,
+    nodes_between_communities:int = 0
+):
+    # Layers = 0, no layers just single clique ring
+    num_clique_rings = community_count**layers
+    rings = []
+    next_node_id = 0
+    for _ in range(num_clique_rings):
+        rings.append(
+            _build_clique_ring_internal(
+                clique_size = clique_size,
+                clique_count = community_count,
+                nodes_between_cliques = nodes_between_communities,
+                start_id = next_node_id
+            )
+        )
+        next_node_id += len(rings[-1]["nodes"])
+
+    # Build a color map
+    # color_map = {}
+    # for ring_i in range(len(rings)):
+    #     for node in rings[ring_i]["nodes"]:
+    #         color_map[node] = ring_i
+    # print(rings)
+    # Build hierarchy bottom-up
+    # In sets of size "community_count", merge rings together until everything has been merged.
+    while len(rings) > 1:
+        # print("-------merge layer-------")
+        new_rings = []
+        cur_ring = 0
+        merges = len(rings) // community_count
+        # print(f"Num merges to do: {merges}")
+        # print(f"Total rings to merge together: {len(rings)}")
+        # next_ring_id = (cur_ring + 1) %
+        for _ in range(merges):
+            # print(f"   Merging {community_count} rings together")
+            # Connect community_count rings together
+            new_rings.append({"nodes": [], "edges": []})
+            first_ring = cur_ring
+            for comm in range(community_count):
+                # next ring to use?
+                # next_ring = (cur_ring + 1) % len(rings)
+                if comm < community_count - 1:
+                    next_ring = cur_ring + 1
+                else:
+                    next_ring = first_ring
+                # connect cur_ring to next ring
+                cur_ring_conn_point = random.choice(rings[cur_ring]["nodes"])
+                next_ring_conn_point = random.choice(rings[next_ring]["nodes"])
+                if nodes_between_communities == 0:
+                    new_rings[-1]["edges"].append((cur_ring_conn_point, next_ring_conn_point))
+                    continue
+                prev_node = cur_ring_conn_point
+                for _ in range(nodes_between_communities):
+                    new_rings[-1]["nodes"].append(next_node_id)
+                    new_rings[-1]["edges"].append((prev_node, next_node_id))
+                    prev_node = next_node_id
+                    next_node_id += 1
+                new_rings[-1]["edges"].append((prev_node, next_ring_conn_point))
+                # Add all nodes/edges from ring_i to new_rings
+                new_rings[-1]["nodes"] += rings[cur_ring]["nodes"][:]
+                new_rings[-1]["edges"] += rings[cur_ring]["edges"][:]
+                cur_ring += 1
+
+            # # Connect cur ring back to first ring
+            # cur_ring_conn_point = random.choice(rings[cur_ring]["nodes"])
+            # first_ring_conn_point = random.choice(rings[first_ring]["nodes"])
+            # if nodes_between_communities == 0:
+            #     new_rings[-1]["edges"]
+
+        # Update rings to be new_rings
+        rings = new_rings
+    # Create networkx graph
+    graph = nx.Graph()
+    graph.add_nodes_from(rings[0]["nodes"])
+    graph.add_edges_from(rings[0]["edges"])
     # print(graph.nodes)
     # print(graph.edges)
 
-    # print(cliques)
-    # print(next_node_id)
+    # nx.draw(
+    #     graph,
+    #     pos = nx.spring_layout(graph, iterations=10000),
+    #     with_labels = True,
+    #     # labels = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())],
+    #     node_color = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())]
+    # )
+    # plt.show()
+
     return graph
 
 
-
-    # [(j, i) for i in range(nodes) for j in range(i) if i != j]
-# g = gen_graph_clique_ring(5, 4, 5)
-# nx.draw(g, pos = nx.kamada_kawai_layout(g),  with_labels = True)
-# plt.show()
+# g = gen_graph_hierarchical_clique_ring(
+#     layers = 2,
+#     clique_size = 5,
+#     community_count= 3,
+#     nodes_between_communities = 4
+# )
