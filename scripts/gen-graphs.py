@@ -72,7 +72,7 @@ defaults = {
         "clique_size": 8,
         "community_count": 10,
         "layers": 2,
-        "nodes_between_cliques": 2,
+        "nodes_between_communities": 2,
         "seed": None
     }
 }
@@ -93,6 +93,7 @@ def main():
     parser.add_argument("--config", type=str, default="graphs.cfg", help=".json configuration file with settings for each graph to generate.")
     parser.add_argument("--dump_dir", type=str, default=".", help="Where to write output files")
     parser.add_argument("-l", "--list_graphs", action="store_true", help="List all available graphs (does not run generators).")
+    parser.add_argument("-o", "--overwrite", action="store_true", help="If output file with exact same name exists in dump directory, regenerate and overwrite.")
 
     args = parser.parse_args()
 
@@ -154,6 +155,9 @@ def main():
             else:
                 out_name = f"{base_out_name}.{output_modes[mode]["ext"]}"
             out_path = os.path.join(args.dump_dir, out_name)
+            if (not args.overwrite) and os.path.isfile(out_path):
+                print(f"  {out_path} already exists, not overwriting")
+                continue
             # Determine seed to use if graph generator takes seed
             # - Override seed in defaults/params with base + i if base seed is given
             if ("seed" in gen_params) and ("base_seed" in graph_cfg):
