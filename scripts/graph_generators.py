@@ -9,8 +9,9 @@ Many of the functions from this are copied / adapted from those in this reposito
 import random
 import networkx as nx
 import matplotlib.pyplot as plt
+from typing import Optional
 
-def gen_graph_well_mixed(nodes: int):
+def gen_graph_well_mixed(nodes:int):
     """
     Function generates a well-mixed graph where all nodes are connected by edges.
     Attributes:
@@ -103,19 +104,6 @@ def gen_graph_comet_kite(
     # print("Edges: ", graph.edges)
     return graph
 
-def gen_graph_circular_chain(nodes:int):
-    """
-    Function generates a cyclic graph.
-    Attributes:
-        nodes(int): The indicated number of nodes within the cyclic graph.
-    Returns:
-        The cyclic graph based number of nodes and edges.
-    """
-    graph = nx.path_graph(nodes)
-    if nodes > 1:
-        graph.add_edge(nodes - 1, 0)
-    return graph
-
 def gen_graph_linear_chain(nodes:int):
     """
     Function generates a linear chain or path graph.
@@ -177,7 +165,7 @@ def gen_graph_wheel(nodes:int):
     return graph
 
 
-def gen_graph_random_erdos_renyi(nodes:int,edge_prob:float, seed:int):
+def gen_graph_random_erdos_renyi(nodes:int, edge_prob:float, seed:int):
     """
     Function that generates a random graph structure.
     Attributes:
@@ -219,7 +207,7 @@ def gen_graph_random_waxman(nodes:int, beta:float, alpha:float, seed:int):
     graph = nx.waxman_graph(n=nodes,beta=beta,alpha=alpha,seed=seed)
     return graph
 
-def gen_graph_random_geometric(nodes:int, radius:float, dimension:int, seed:int ):
+def gen_graph_random_geometric(nodes:int, radius:float, dimension:int, seed:int):
     """
     Function generates a random geometric graph. Based on the workings of Penrose.
     Attributes:
@@ -230,10 +218,20 @@ def gen_graph_random_geometric(nodes:int, radius:float, dimension:int, seed:int 
     Returns:
         The a random graph structure based on the parameters of
     """
-    graph = nx.random_geometric_graph()
+    graph = nx.random_geometric_graph(
+        nodes,
+        radius = radius,
+        dim = dimension,
+        seed = seed
+    )
     return graph
 
-def gen_graph_clique_ring(clique_size:int, clique_count:int, nodes_between_cliques:int = 0):
+def gen_graph_clique_ring(
+        clique_size:int,
+        clique_count:int,
+        nodes_between_cliques:int = 0,
+        seed:Optional[int] = None
+    ):
     '''
     Function generates a ring of k-cliques.
     Atributes
@@ -241,6 +239,10 @@ def gen_graph_clique_ring(clique_size:int, clique_count:int, nodes_between_cliqu
         clique_count (int): Number of cliques in the ring
         nodes_between_cliques (int): Number of nodes between cliques in the ring
     '''
+    # If seed provided, reset random number generator with that seed.
+    if not seed is None:
+        random.seed(seed)
+
     cliques = [ [(c * clique_size) + k for k in range(clique_size)] for c in range(clique_count)]
     next_node_id = (clique_count * clique_size)
     graph = nx.Graph()
@@ -307,8 +309,12 @@ def gen_graph_hierarchical_clique_ring(
     clique_size:int,
     community_count:int,
     layers: int = 0,
-    nodes_between_communities:int = 0
+    nodes_between_communities:int = 0,
+    seed:Optional[int] = None
 ):
+    # If seed provided, reset random number generator with that seed.
+    if not seed is None:
+        random.seed(seed)
     # Layers = 0, no layers just single clique ring
     num_clique_rings = community_count**layers
     rings = []
@@ -403,3 +409,24 @@ def gen_graph_hierarchical_clique_ring(
 #     community_count= 3,
 #     nodes_between_communities = 4
 # )
+
+# Make dictionary that associates name with generator function
+_graph_generators = {
+    "well-mixed": gen_graph_well_mixed,
+    "toroidal-lattice": gen_graph_toroidal_lattice,
+    "comet-kite": gen_graph_comet_kite,
+    "linear-chain": gen_graph_linear_chain,
+    "star": gen_graph_star,
+    "random-erdos-renyi": gen_graph_random_erdos_renyi,
+    "random-barabasi-albert": gen_graph_random_barabasi_albert,
+    "random-waxman": gen_graph_random_waxman,
+    "random-geometric": gen_graph_random_geometric,
+    "cycle": gen_graph_cycle,
+    "wheel": gen_graph_wheel,
+    "windmill": gen_graph_windmill,
+    "clique-ring": gen_graph_clique_ring,
+    "hierarchical-clique-ring": gen_graph_hierarchical_clique_ring
+}
+
+def get_generator_fun(name:str):
+    return _graph_generators[name]
