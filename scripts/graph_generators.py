@@ -372,8 +372,8 @@ def gen_graph_hierarchical_clique_ring(
                     next_node_id += 1
                 new_rings[-1]["edges"].append((prev_node, next_ring_conn_point))
                 # Add all nodes/edges from ring_i to new_rings
-                new_rings[-1]["nodes"] += rings[cur_ring]["nodes"][:]
-                new_rings[-1]["edges"] += rings[cur_ring]["edges"][:]
+                new_rings[-1]["nodes"].extend(rings[cur_ring]["nodes"])
+                new_rings[-1]["edges"].extend(rings[cur_ring]["edges"])
                 cur_ring += 1
 
             # # Connect cur ring back to first ring
@@ -384,6 +384,7 @@ def gen_graph_hierarchical_clique_ring(
 
         # Update rings to be new_rings
         rings = new_rings
+
     # Create networkx graph
     graph = nx.Graph()
     graph.add_nodes_from(rings[0]["nodes"])
@@ -401,7 +402,6 @@ def gen_graph_hierarchical_clique_ring(
     # plt.show()
 
     return graph
-
 
 # g = gen_graph_hierarchical_clique_ring(
 #     layers = 2,

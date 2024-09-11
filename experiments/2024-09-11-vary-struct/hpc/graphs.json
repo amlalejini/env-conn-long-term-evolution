@@ -1,0 +1,44 @@
+{
+  "graphs-to-generate": [
+    {
+      "graph": "star",
+      "params": {"nodes": 3600}
+    },
+    {
+      "graph": "random-waxman",
+      "params": {"nodes": 3600, "beta": 0.4, "alpha": 0.2},
+      "base_seed": 1000,
+      "output_id": "random-waxman",
+      "count": 50
+    },
+    {
+      "graph": "comet-kite",
+      "params": {"nodes": 3600}
+    },
+    {
+      "graph": "linear-chain",
+      "params": {"nodes": 3600}
+    },
+    {
+      "graph": "clique-ring",
+      "params": {
+        "clique_size": 115,
+        "clique_count": 30,
+        "nodes_between_cliques": 5
+      },
+      "base_seed": 1000,
+      "count": 50
+    },
+    {
+      "graph": "hierarchical-clique-ring",
+      "params": {
+        "clique_size": 50,
+        "community_count": 8,
+        "layers": 1,
+        "nodes_between_communities": 5
+      },
+      "base_seed": 1000,
+      "count": 50
+    }
+  ]
+}
