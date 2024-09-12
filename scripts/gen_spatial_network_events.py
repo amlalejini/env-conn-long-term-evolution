@@ -104,11 +104,17 @@ def GenSpatialNetworkEventsStr(
     connection_cmds = GenConnectCmds(connections, "u begin")
 
     # Build command sequence string
-    event_cmds = "\n".join(
-        ["# -- Disconnect all locations --"] + disconnect_all_cmds + ["# -- Reconnect locations to impose spatial structure -- "] + connection_cmds
-    )
+    event_cmds = ["# -- Disconnect all locations --"]
+    event_cmds.append(disconnect_all_cmds)
+    event_cmds.append("# -- Reconnect locations to impose spatial structure -- ")
+    event_cmds.extend(connection_cmds)
 
-    return event_cmds
+    # Build mapping: x, y, node_id
+    avida_loc_to_node_mapping = [
+        {"x":xy[0], "y":xy[1], "node_id":xy_to_node[xy]} for xy in xy_to_node
+    ]
+
+    return {"cmds": "\n".join(event_cmds), "location_mapping":avida_loc_to_node_mapping}
 
 def main():
     parser = argparse.ArgumentParser(
@@ -135,9 +141,13 @@ def main():
         graph_file = args.graph_file,
         directed_graph = args.directed_graph
     )
+    loc_mapping = event_cmds["location_mapping"]
+    cmds = event_cmds["cmds"]
+    loc_mapping_name = "avida_loc_map__" + args.out_name.split(".")[0] + ".csv"
+    utils.write_csv(os.path.join(args.dump_dir, loc_mapping_name), loc_mapping)
 
     with open(os.path.join(args.dump_dir, args.out_name), "w") as fp:
-        fp.write(event_cmds)
+        fp.write(cmds)
 
 if __name__ == "__main__":
     main()

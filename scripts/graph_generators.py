@@ -125,7 +125,7 @@ def gen_graph_star(nodes:int):
     Returns:
         A star shaped graph. More of a spoke though. (?)
     """
-    graph = nx.star_graph(nodes)
+    graph = nx.star_graph(nodes - 1)
     return graph
 
 def gen_graph_windmill(cliques:int, clique_size:int):

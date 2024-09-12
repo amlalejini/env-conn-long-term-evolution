@@ -4,6 +4,11 @@ Initial exploratory experiment. Vary spatial structure:
 
 - ...
 
+TODO
+
+- save mapping used from graph to locations in avida
+- echo dynamic configuration variables
+
 Directory guide:
 
 - `config/` contains Avida configuration files (all of these files are copied into each run directory for each run)
