@@ -13,7 +13,11 @@
     },
     {
       "graph": "comet-kite",
-      "params": {"nodes": 3600}
+      "params": {
+        "core_size":1440,
+        "num_tails": 720,
+        "additional_tail_nodes": 1440
+      }
     },
     {
       "graph": "linear-chain",
@@ -38,7 +42,7 @@
         "nodes_between_communities": 5
       },
       "base_seed": 1000,
-      "count": 50
+      "increase_size_to": 3600
     }
   ]
 }
