@@ -166,6 +166,13 @@ def main():
             # Generate graph
             print(f"  Gen {out_name}: {gen_params}")
             graph = generator(**gen_params)
+
+            # Grow graph?
+            if "increase_size_to" in graph_cfg:
+                # Note: set random seed here? Already set for random graphs, but not for non-random.
+                ggen.add_random_nodes(graph, graph_cfg["increase_size_to"])
+            print(f"  - Num nodes in graph: {len(graph)}")
+            print(f"  - Num edges in graph: {len(graph.edges)}")
             output_modes[mode]["write_fun"](out_path, graph)
 
 if __name__ == "__main__":

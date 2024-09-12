@@ -403,12 +403,29 @@ def gen_graph_hierarchical_clique_ring(
 
     return graph
 
-# g = gen_graph_hierarchical_clique_ring(
-#     layers = 2,
-#     clique_size = 5,
-#     community_count= 3,
-#     nodes_between_communities = 4
-# )
+def add_random_nodes(graph:nx.Graph, new_size:int, seed:Optional[int] = None):
+    '''
+    Given a networkx graph, add random nodes to increase size to new_size
+
+    If # of nodes in graph >= new_size already, do nothing.
+    '''
+    # If seed provided, reset random number generator with that seed.
+    if not (seed is None):
+        random.seed(seed)
+
+    def get_next_id(next_id):
+        while next_id in graph:
+            next_id += 1
+        return next_id
+
+    # Ensure that next node id is unique
+    next_node_id = get_next_id(len(graph))
+    while len(graph) < new_size:
+        # Pick a random node
+        conn_node = random.choice(list(graph.nodes))
+        graph.add_node(next_node_id)
+        graph.add_edge(conn_node, next_node_id)
+        next_node_id = get_next_id(next_node_id + 1)
 
 # Make dictionary that associates name with generator function
 _graph_generators = {
@@ -430,3 +447,10 @@ _graph_generators = {
 
 def get_generator_fun(name:str):
     return _graph_generators[name]
+
+# g = gen_graph_hierarchical_clique_ring(
+#     layers = 2,
+#     clique_size = 5,
+#     community_count= 3,
+#     nodes_between_communities = 4
+# )
