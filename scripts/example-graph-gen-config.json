@@ -8,7 +8,8 @@
     {
       "graph": "well-mixed",
       "params": {"nodes": 10},
-      "output_id": "wm10"
+      "output_id": "wm10",
+      "increase_size_to": 20
     },
     {
       "graph": "random-waxman",
