@@ -17,7 +17,8 @@
         "core_size":1440,
         "num_tails": 720,
         "additional_tail_nodes": 1440
-      }
+      },
+      "count": 50
     },
     {
       "graph": "linear-chain",

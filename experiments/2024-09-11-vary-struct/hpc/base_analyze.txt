@@ -9,7 +9,7 @@
 VERBOSE
 SET_BATCH 0
 
-LOAD data/detail-100000.spop
+LOAD data/detail-<<NUM_UPDATES>>.spop
 DUPLICATE 0 1
 
 SET_BATCH 0
