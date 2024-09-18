@@ -30,6 +30,7 @@ executable = "avida"
 
 base_slurm_script_fpath = "./base_slurm_script.txt"
 base_events_fpath = "./base_events.txt"
+base_analyze_fpath = "./base_analyze.txt"
 
 birth_method_modes = {
     "random-neighborhood": "0",
@@ -42,7 +43,8 @@ combos = CombinationCollector()
 # Special parameters are used to generate the SLURM script but not
 # used directly as Avida configuration settings
 fixed_params_dynamic = {
-    "updates": "100000",
+    # "updates": "100000",
+    "updates": "1000",
     "print_data_resolution": "100"
 }
 
@@ -183,6 +185,18 @@ def main():
                 print(f"Too few spatial structure files for requested number of replicates for {spatial_struct}")
                 exit(-1)
 
+    # -- Generate analyze.cfg script --
+    # Load in the base slurm file
+    base_analyze_script = ""
+    with open(base_analyze_fpath, "r") as fp:
+        base_analyze_script = fp.read()
+    # Update updates to match number of updates for this experiment
+    base_analyze_script = base_analyze_script.replace("<<NUM_UPDATES>>", str(fixed_params_dynamic["updates"]))
+    # Output new analyze file
+    with open(os.path.join(config_dir, "analyze.cfg"), "w") as fp:
+        fp.write(base_analyze_script)
+
+    # -- Generate slurm script + event files, etc for each condition --
     for condition_info in combo_list:
         print(condition_info)
         # Calc current seed.
