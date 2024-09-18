@@ -344,10 +344,6 @@ def main():
 
         print("  ", cmd_line_params)
 
-        # TODO: echo all meta parameters + all cmdline params into run_config.csv snapshot
-        #  - Add util that takes dictionary and does this
-        #  - one snapshot per replicate
-
         ###################################################################
         # Write job submission file (if any of the array ids are active)
         ###################################################################
