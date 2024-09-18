@@ -94,6 +94,7 @@ def main():
     parser.add_argument("--dump_dir", type=str, default=".", help="Where to write output files")
     parser.add_argument("-l", "--list_graphs", action="store_true", help="List all available graphs (does not run generators).")
     parser.add_argument("-o", "--overwrite", action="store_true", help="If output file with exact same name exists in dump directory, regenerate and overwrite.")
+    parser.add_argument("--name_with_seed", action="store_true", help="Should output files w/count > 1 be differentiated with seed or consecutive ids, starting at 0")
 
     args = parser.parse_args()
 
@@ -150,7 +151,7 @@ def main():
             # Build output file name
             out_name = ""
             if count > 1:
-                file_id = i if ("base_seed" not in graph_cfg) or (graph_cfg["base_seed"] is None) else graph_cfg["base_seed"] + i
+                file_id = i if ("base_seed" not in graph_cfg) or (graph_cfg["base_seed"] is None) or (not args.name_with_seed) else graph_cfg["base_seed"] + i
                 out_name = f"{base_out_name}_{file_id}.{output_modes[mode]["ext"]}"
             else:
                 out_name = f"{base_out_name}.{output_modes[mode]["ext"]}"

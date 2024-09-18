@@ -97,7 +97,7 @@ def main():
     parser.add_argument("--spatial_structs_dir", type=str, help="Which directory contains spatial structures to be used?")
     parser.add_argument("--events_dir", type=str, help="Which directory to dump events files in?")
     parser.add_argument("--param_snapshot_dir", type=str, help="Which directory to dump parameter snapshots?")
-    parser.add_argument("--avida_loc_mapping_dir", type=str, help="Where to dump avida location mapping files?")
+    # parser.add_argument("--avida_loc_mapping_dir", type=str, help="Where to dump avida location mapping files?")
     parser.add_argument("--repo_dir", type=str, help="Where is the repository for this experiment?")
     parser.add_argument("--job_dir", type=str, default=None, help="Where to output these job files? If none, put in 'jobs' directory inside of the data_dir")
     parser.add_argument("--replicates", type=int, default=default_num_replicates, help="How many replicates should we run of each condition?")
@@ -151,20 +151,24 @@ def main():
     events_dir = args.events_dir
     param_snapshot_dir = args.param_snapshot_dir
     job_dir = args.job_dir
-    avida_loc_mapping_dir = args.avida_loc_mapping_dir
+    # avida_loc_mapping_dir = args.avida_loc_mapping_dir
 
     # Create events file directory if doesn't already exist
     utils.mkdir_p(events_dir)
     utils.mkdir_p(param_snapshot_dir)
-    utils.mkdir_p(avida_loc_mapping_dir)
+    # utils.mkdir_p(avida_loc_mapping_dir)
 
     # Identify relevant/available spatial structure files
     spatial_structs = combos.get_vals("spatial_structure__DYNAMIC")
+    # Only allow .mat files.
+    # IMPORTANT: If multiple graph files for a single condition, they must:
+    #  - each end with _ID.mat where ID is a value [0:number of replicates)
+    #  - all be in matrix format
     struct_files = {
         spatial_struct:[
             filename
             for filename in os.listdir(spatial_structs_dir)
-            if filename.startswith(spatial_struct)
+            if filename.startswith(spatial_struct) and (".mat" in filename)
         ]
         for spatial_struct in spatial_structs
     }
@@ -193,6 +197,7 @@ def main():
         file_str = file_str.replace("<<CONFIG_DIR>>", config_dir)
         file_str = file_str.replace("<<REPO_DIR>>", repo_dir)
         file_str = file_str.replace("<<EVENTS_DIR>>", events_dir)
+        file_str = file_str.replace("<<SPATIAL_STRUCT_DIR>>", spatial_structs_dir)
         file_str = file_str.replace("<<PARAM_SNAPSHOT_DIR>>", param_snapshot_dir)
         file_str = file_str.replace("<<EXEC>>", executable)
         file_str = file_str.replace("<<JOB_SEED_OFFSET>>", str(cur_seed))
@@ -238,58 +243,64 @@ def main():
             cmd_line_params["BIRTH_METHOD"] = birth_method_modes["random-neighborhood"]
 
         cond_struct_files = struct_files[cond_spatial_struct]
-        map_seed_to_graph_id = False
+        multiple_graphs_for_cond = False
         if (cond_spatial_struct in {"well-mixed", "torroidal-lattice"}):
             cmd_line_params["EVENTS_FILE"] = f"events_{cond_spatial_struct}.cfg"
         elif len(cond_struct_files) <= 1:
             cmd_line_params["EVENTS_FILE"] = f"events_{cond_spatial_struct}.cfg"
         else:
-            cmd_line_params["EVENTS_FILE"] = f"events_{cond_spatial_struct}_" + "${SEED}.cfg"
-            map_seed_to_graph_id = True
+            cmd_line_params["EVENTS_FILE"] = f"events_{cond_spatial_struct}_" + "${RUN_ID}.cfg"
+            multiple_graphs_for_cond = True
 
         world_x = int(cmd_line_params["WORLD_X"])
         world_y = int(cmd_line_params["WORLD_Y"])
         seed_to_source_graph = {}
 
+        event_file_name = "unknown"
+        rep_events_str = ""
+        graph_file_name = ""
         if (cond_spatial_struct in {"well-mixed", "torroidal-lattice"}):
             # Relying on base avida functionality to implement spatial structure
-            # Write events file
+            # No spatial structure configuration events necessary.
             event_file_name = cmd_line_params["EVENTS_FILE"]
             rep_events_str = base_events_content.replace("<<CFG_SPATIAL_STRUCT_CMDS>>", "")
             with open(os.path.join(events_dir, event_file_name), "w") as fp:
                 fp.write(rep_events_str)
+        elif not multiple_graphs_for_cond:
+            # Need to setup ReconfigureCellConnectivity command, and
+            # all replicates share the same event file.
+            graph_file_name = cond_struct_files[-1]
+            event_file_name = cmd_line_params["EVENTS_FILE"]
+            rep_events_str = base_events_content.replace(
+                "<<CFG_SPATIAL_STRUCT_CMDS>>",
+                f"u begin ReconfigureCellConnectivity {graph_file_name}"
+            )
+            with open(os.path.join(events_dir, event_file_name), "w") as fp:
+                fp.write(rep_events_str)
         else:
-            # Need to convert graph file into events sequence
+            # Need to setup ReconfigureCellConnectivity command, and all replicates
+            # have a unique event file.
+            graph_name_prefix = "_".join(cond_struct_files[-1].split("_")[:-1])
             for i in range(len(cond_struct_files)):
-                run_seed = cur_seed + i # TODO - double check that this lines up with slurm scripts
-                graph_file_path = os.path.join(spatial_structs_dir, cond_struct_files[i])
-                event_file_name = cmd_line_params["EVENTS_FILE"].replace("${SEED}", str(run_seed))
-                graph_file_ext = pathlib.Path(graph_file_path).suffix
-                mode = "edges" if graph_file_ext == ".csv" else "matrix"
-                # Generate event content str
-                events_cmds = GenSpatialNetworkEventsStr(
-                    world_x=world_x,
-                    world_y=world_y,
-                    graph_format=mode,
-                    graph_file=graph_file_path,
-                    directed_graph=False # Avida connectivity is undirected
+                run_id = i
+                run_seed = cur_seed + i
+                event_file_name = cmd_line_params["EVENTS_FILE"].replace("${RUN_ID}", str(run_id))
+                # Check that the graph file name matches expectation
+                graph_file_name = cond_struct_files[i]
+                expected_graph_name = f"{graph_name_prefix}_{run_id}.mat"
+                if graph_file_name != expected_graph_name:
+                    print(f"Unexpected graph name for condition: {condition_info}")
+                    print(f"  Expected: {expected_graph_name}")
+                    print(f"  Found: {graph_file_name}")
+                # Write new events file
+                rep_events_str = base_events_content.replace(
+                    "<<CFG_SPATIAL_STRUCT_CMDS>>",
+                    f"u begin ReconfigureCellConnectivity {graph_file_name}"
                 )
-                loc_mapping = events_cmds["location_mapping"]
-                mapping_fpath = os.path.join(
-                    avida_loc_mapping_dir,
-                    f"avida_loc_map__{event_file_name.split('.')[0]}.csv"
-                )
-                utils.write_csv(
-                    mapping_fpath,
-                    loc_mapping
-                )
-                events_cmds_str = events_cmds["cmds"]
-                if map_seed_to_graph_id:
-                    seed_to_source_graph[run_seed] = graph_file_path
-                # Write events file
-                rep_events_str = base_events_content.replace("<<CFG_SPATIAL_STRUCT_CMDS>>", events_cmds_str)
                 with open(os.path.join(events_dir, event_file_name), "w") as fp:
                     fp.write(rep_events_str)
+            # Graph file name is function of run id
+            graph_file_name = f"{graph_name_prefix}_" + "${RUN_ID}.mat"
 
         # -- Build run configuration cp commands --
         # Copy:
@@ -299,6 +310,8 @@ def main():
         config_cp_cmds.append("cp ${CONFIG_DIR}/*.org .")
         config_cp_cmds.append("cp ${CONFIG_DIR}/*.cfg .")
         config_cp_cmds.append("cp ${EVENTS_DIR}/" + f"{cmd_line_params['EVENTS_FILE']} .")
+        if graph_file_name != "":
+            config_cp_cmds.append("cp ${SPATIAL_STRUCTS_DIR}/" + f"{graph_file_name} .")
         config_cp_cmds.append("cp ${PARAM_SNAPSHOT_DIR}/" + "run_params_${SEED}.csv ./run_params.csv")
         file_str = file_str.replace("<<CONFIG_CP_CMDS>>", "\n".join(config_cp_cmds))
 
@@ -321,24 +334,24 @@ def main():
         # these directly to appropriate run directory
         for i in range(args.replicates):
             run_seed = cur_seed + i
-            event_file_name = cmd_line_params["EVENTS_FILE"].replace("${SEED}", str(run_seed))
+            event_file_name = cmd_line_params["EVENTS_FILE"].replace("${RUN_ID}", str(i))
             graph_name = "none"
-            if map_seed_to_graph_id:
-                graph_name = pathlib.Path(seed_to_source_graph[run_seed]).name
+            if multiple_graphs_for_cond:
+                graph_name = graph_file_name.replace("${RUN_ID}", f"{i}")
             elif len(cond_struct_files) == 1:
-                graph_name = cond_struct_files[0]
+                graph_name = cond_struct_files[-1]
             param_snapshot = [{"param":param, "value":cmd_line_params[param]} for param in cmd_line_params]
             param_snapshot.append({"param":"graph_file", "value":graph_name})
             param_snapshot.append({"param":"graph_type", "value":cond_spatial_struct})
             param_snapshot.append({"param":"events_file_name", "value":event_file_name})
             param_snapshot.append({"param":"seed", "value":run_seed})
-            mapping_fpath = "none"
-            if graph_name != "none":
-                mapping_fpath = os.path.join(
-                    avida_loc_mapping_dir,
-                    f"avida_loc_map__{event_file_name.split('.')[0]}.csv"
-                )
-            param_snapshot.append({"param":"loc_mapping_fpath", "value":mapping_fpath})
+            # mapping_fpath = "none"
+            # if graph_name != "none":
+            #     mapping_fpath = os.path.join(
+            #         avida_loc_mapping_dir,
+            #         f"avida_loc_map__{event_file_name.split('.')[0]}.csv"
+            #     )
+            # param_snapshot.append({"param":"loc_mapping_fpath", "value":mapping_fpath})
             snapshot_path = os.path.join(param_snapshot_dir, f"run_params_{run_seed}.csv")
             utils.write_csv(snapshot_path, param_snapshot)
 
