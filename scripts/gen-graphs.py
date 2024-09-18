@@ -152,9 +152,9 @@ def main():
             out_name = ""
             if count > 1:
                 file_id = i if ("base_seed" not in graph_cfg) or (graph_cfg["base_seed"] is None) or (not args.name_with_seed) else graph_cfg["base_seed"] + i
-                out_name = f"{base_out_name}_{file_id}.{output_modes[mode]["ext"]}"
+                out_name = f"{base_out_name}_{file_id}.{output_modes[mode]['ext']}"
             else:
-                out_name = f"{base_out_name}.{output_modes[mode]["ext"]}"
+                out_name = f"{base_out_name}.{output_modes[mode]['ext']}"
             out_path = os.path.join(args.dump_dir, out_name)
             if (not args.overwrite) and os.path.isfile(out_path):
                 print(f"  {out_path} already exists, not overwriting")
