@@ -41,5 +41,4 @@ python3 gen-sub.py \
   --job_dir ${JOB_DIR} \
   --hpc_account ${ACCOUNT} \
   --seed_offset ${SEED_OFFSET} \
-  --spatial_structs_dir ${GRAPHS_DIR} \
-  --avida_loc_mapping_dir ${AVIDA_LOC_MAPPING_DIR}
+  --spatial_structs_dir ${GRAPHS_DIR}

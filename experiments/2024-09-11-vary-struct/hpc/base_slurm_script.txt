@@ -11,6 +11,7 @@
 
 
 JOB_SEED_OFFSET=<<JOB_SEED_OFFSET>>
+RUN_ID=$((SLURM_ARRAY_TASK_ID - 1))
 SEED=$((JOB_SEED_OFFSET + SLURM_ARRAY_TASK_ID - 1))
 
 # Variables for convenience
@@ -19,6 +20,7 @@ CONFIG_DIR=<<CONFIG_DIR>>
 REPO_DIR=<<REPO_DIR>>
 RUN_DIR=<<RUN_DIR>>
 EVENTS_DIR=<<EVENTS_DIR>>
+SPATIAL_STRUCT_DIR=<<SPATIAL_STRUCT_DIR>>
 PARAM_SNAPSHOT_DIR=<<PARAM_SNAPSHOT_DIR>>
 
 # Load correct environment variables, modules, etc.
@@ -35,6 +37,6 @@ cp ${CONFIG_DIR}/${EXEC} .
 <<ANALYSIS_CMDS>>
 
 # Clean up run directory
-rm ${RUN_DIR}/*.cfg
-rm ${RUN_DIR}/*.org
-rm ${RUN_DIR}/${EXEC}
+# rm ${RUN_DIR}/*.cfg
+# rm ${RUN_DIR}/*.org
+# rm ${RUN_DIR}/${EXEC}
