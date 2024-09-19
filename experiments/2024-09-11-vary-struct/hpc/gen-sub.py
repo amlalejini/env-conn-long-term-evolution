@@ -51,7 +51,7 @@ fixed_params_dynamic = {
 fixed_params_direct = {
     "WORLD_X": "60",
     "WORLD_Y": "60",
-    "PHYLOGENY_SNAPSHOT_RES": fixed_params_dynamic["print_data_resolution"],
+    "PHYLOGENY_SNAPSHOT_RES": fixed_params_dynamic["updates"],
     "SYSTEMATICS_RES": "100",
     "FORCE_MRCA_COMP": "1",
     "COPY_MUT_PROB": "0.0025",
