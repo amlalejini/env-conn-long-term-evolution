@@ -35,9 +35,14 @@ cp ${CONFIG_DIR}/${EXEC} .
 <<CONFIG_CP_CMDS>>
 
 <<RUN_CMDS>>
+
+# Move csv files into data directory so they don't get stomped on by analyze mode.
+mv ./*.csv ./data/
+
 <<ANALYSIS_CMDS>>
 
 # Clean up run directory
 rm ${RUN_DIR}/*.cfg
 rm ${RUN_DIR}/*.org
 rm ${RUN_DIR}/${EXEC}
+rm ${RUN_DIR}/*.csv
