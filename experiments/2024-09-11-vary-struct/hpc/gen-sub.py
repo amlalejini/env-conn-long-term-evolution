@@ -259,11 +259,11 @@ def main():
         cond_struct_files = struct_files[cond_spatial_struct]
         multiple_graphs_for_cond = False
         if (cond_spatial_struct in {"well-mixed", "torroidal-lattice"}):
-            cmd_line_params["EVENTS_FILE"] = f"events_{cond_spatial_struct}.cfg"
+            cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
         elif len(cond_struct_files) <= 1:
-            cmd_line_params["EVENTS_FILE"] = f"events_{cond_spatial_struct}.cfg"
+            cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
         else:
-            cmd_line_params["EVENTS_FILE"] = f"events_{cond_spatial_struct}_" + "${RUN_ID}.cfg"
+            cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}_" + "${RUN_ID}.cfg"
             multiple_graphs_for_cond = True
 
         world_x = int(cmd_line_params["WORLD_X"])
@@ -276,7 +276,7 @@ def main():
         if (cond_spatial_struct in {"well-mixed", "torroidal-lattice"}):
             # Relying on base avida functionality to implement spatial structure
             # No spatial structure configuration events necessary.
-            event_file_name = cmd_line_params["EVENTS_FILE"]
+            event_file_name = cmd_line_params["EVENT_FILE"]
             rep_events_str = base_events_content.replace("<<CFG_SPATIAL_STRUCT_CMDS>>", "")
             with open(os.path.join(events_dir, event_file_name), "w") as fp:
                 fp.write(rep_events_str)
@@ -284,7 +284,7 @@ def main():
             # Need to setup ReconfigureCellConnectivity command, and
             # all replicates share the same event file.
             graph_file_name = cond_struct_files[-1]
-            event_file_name = cmd_line_params["EVENTS_FILE"]
+            event_file_name = cmd_line_params["EVENT_FILE"]
             rep_events_str = base_events_content.replace(
                 "<<CFG_SPATIAL_STRUCT_CMDS>>",
                 f"u begin ReconfigureCellConnectivity {graph_file_name}"
@@ -298,7 +298,7 @@ def main():
             for i in range(len(cond_struct_files)):
                 run_id = i
                 run_seed = cur_seed + i
-                event_file_name = cmd_line_params["EVENTS_FILE"].replace("${RUN_ID}", str(run_id))
+                event_file_name = cmd_line_params["EVENT_FILE"].replace("${RUN_ID}", str(run_id))
                 # Check that the graph file name matches expectation
                 graph_file_name = cond_struct_files[i]
                 expected_graph_name = f"{graph_name_prefix}_{run_id}.mat"
@@ -323,7 +323,7 @@ def main():
         config_cp_cmds = []
         config_cp_cmds.append("cp ${CONFIG_DIR}/*.org .")
         config_cp_cmds.append("cp ${CONFIG_DIR}/*.cfg .")
-        config_cp_cmds.append("cp ${EVENTS_DIR}/" + f"{cmd_line_params['EVENTS_FILE']} .")
+        config_cp_cmds.append("cp ${EVENTS_DIR}/" + f"{cmd_line_params['EVENT_FILE']} .")
         if graph_file_name != "":
             config_cp_cmds.append("cp ${SPATIAL_STRUCTS_DIR}/" + f"{graph_file_name} .")
         config_cp_cmds.append("cp ${PARAM_SNAPSHOT_DIR}/" + "run_params_${SEED}.csv ./run_params.csv")
@@ -348,7 +348,7 @@ def main():
         # these directly to appropriate run directory
         for i in range(args.replicates):
             run_seed = cur_seed + i
-            event_file_name = cmd_line_params["EVENTS_FILE"].replace("${RUN_ID}", str(i))
+            event_file_name = cmd_line_params["EVENT_FILE"].replace("${RUN_ID}", str(i))
             graph_name = "none"
             if multiple_graphs_for_cond:
                 graph_name = graph_file_name.replace("${RUN_ID}", f"{i}")
@@ -357,7 +357,7 @@ def main():
             param_snapshot = [{"param":param, "value":cmd_line_params[param]} for param in cmd_line_params]
             param_snapshot.append({"param":"graph_file", "value":graph_name})
             param_snapshot.append({"param":"graph_type", "value":cond_spatial_struct})
-            param_snapshot.append({"param":"events_file_name", "value":event_file_name})
+            param_snapshot.append({"param":"EVENT_FILE_name", "value":event_file_name})
             param_snapshot.append({"param":"seed", "value":run_seed})
             # mapping_fpath = "none"
             # if graph_name != "none":
