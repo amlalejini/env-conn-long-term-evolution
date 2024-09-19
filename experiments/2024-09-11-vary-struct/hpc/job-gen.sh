@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-REPLICATES=3
+REPLICATES=50
 EXP_SLUG=2024-09-11-vary-struct
 ACCOUNT=devolab
 SEED_OFFSET=1000
