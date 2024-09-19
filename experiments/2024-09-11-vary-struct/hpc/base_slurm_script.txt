@@ -38,6 +38,6 @@ cp ${CONFIG_DIR}/${EXEC} .
 <<ANALYSIS_CMDS>>
 
 # Clean up run directory
-# rm ${RUN_DIR}/*.cfg
-# rm ${RUN_DIR}/*.org
-# rm ${RUN_DIR}/${EXEC}
+rm ${RUN_DIR}/*.cfg
+rm ${RUN_DIR}/*.org
+rm ${RUN_DIR}/${EXEC}
