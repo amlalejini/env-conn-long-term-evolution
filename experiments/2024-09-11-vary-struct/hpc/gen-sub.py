@@ -325,7 +325,7 @@ def main():
         config_cp_cmds.append("cp ${CONFIG_DIR}/*.cfg .")
         config_cp_cmds.append("cp ${EVENTS_DIR}/" + f"{cmd_line_params['EVENT_FILE']} .")
         if graph_file_name != "":
-            config_cp_cmds.append("cp ${SPATIAL_STRUCTS_DIR}/" + f"{graph_file_name} .")
+            config_cp_cmds.append("cp ${SPATIAL_STRUCT_DIR}/" + f"{graph_file_name} .")
         config_cp_cmds.append("cp ${PARAM_SNAPSHOT_DIR}/" + "run_params_${SEED}.csv ./run_params.csv")
         file_str = file_str.replace("<<CONFIG_CP_CMDS>>", "\n".join(config_cp_cmds))
 
