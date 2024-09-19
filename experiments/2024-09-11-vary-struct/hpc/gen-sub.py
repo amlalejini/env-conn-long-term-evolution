@@ -43,8 +43,8 @@ combos = CombinationCollector()
 # Special parameters are used to generate the SLURM script but not
 # used directly as Avida configuration settings
 fixed_params_dynamic = {
-    # "updates": "100000",
-    "updates": "1000",
+    "updates": "100000",
+    # "updates": "1000",
     "print_data_resolution": "100"
 }
 
