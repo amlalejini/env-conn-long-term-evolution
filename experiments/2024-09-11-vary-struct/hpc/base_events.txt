@@ -20,6 +20,7 @@ u begin Inject default-heads.org
 u 0:<<DATA_PRINT_INTERVAL>>:end PrintDominantData      # Save info about most abundant genotypes
 u 0:<<DATA_PRINT_INTERVAL>>:end PrintTasksData         # Save organisms counts for each task.
 u 0:<<DATA_PRINT_INTERVAL>>:end PrintTimeData          # Track time conversion (generations, etc.)
+u 0:<<DATA_PRINT_INTERVAL>>:end DumpFirstTaskLocations
 
 <<CFG_SPATIAL_STRUCT_CMDS>>
 
