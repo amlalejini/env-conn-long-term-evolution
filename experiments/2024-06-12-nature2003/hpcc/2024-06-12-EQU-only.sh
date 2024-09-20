@@ -6,25 +6,24 @@
 #SBATCH --partition=all
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
-#SBATCH --job-name=2024-06-12-Lenski2003-EQU-only
+#SBATCH --job-name=2024-06-12-nature2003
 #SBATCH --mail-type=BEGIN,END,FAIL
 #SBATCH --mail-user=ggmain777@gmail.com
 #SBATCH --array=1-10
 
 
 USERNAME=gordongr
-EXPERIMENT_ID=2024-06-12-Lenski2003-EQU-only
+EXPERIMENT_ID=2024-06-12-nature2003
 PROJECT_ID=env-conn-long-term-evolution
-OUTPUT_DIR=/mnt/projects/lalejina_projects/data/${PROJECT_ID}/${EXPERIMENT_ID}
+OUTPUT_DIR=/mnt/projects/lalejina_project/data-gordongr/${PROJECT_ID}/${EXPERIMENT_ID}
 REPO_DIR=/mnt/home/${USERNAME}/research/${PROJECT_ID}
-CONFIG_DIR=${REPO_DIR}/experiments/${PROJECT_ID}/hpcc/config
-SEED_OFFSET=1000
+CONFIG_DIR=${REPO_DIR}/experiments/${EXPERIMENT_ID}/hpcc/config
+SEED_OFFSET=1100
 TREATMENT_ENVIRONMENT=environment-EQU-only.cfg
 SEED=$((SEED_OFFSET + SLURM_ARRAY_TASK_ID -1))
 RUN_DIR=${OUTPUT_DIR}/run_${SEED}
 
-mkdir -p ${RUN_DIR}
-
+mkdir -m 775 -p ${RUN_DIR}
 cd ${RUN_DIR}
 
 cp ${CONFIG_DIR}/avida .
@@ -36,7 +35,7 @@ cp ${CONFIG_DIR}/events.cfg .
 cp ${CONFIG_DIR}/instset-heads.cfg .
 
 
-EXECUTE="avida -s${SEED} -set ENVIRONMENT_FILE ${TREATMENT_ENVIRONMENT}"
+EXECUTE="avida -s ${SEED} -set ENVIRONMENT_FILE ${TREATMENT_ENVIRONMENT}"
 echo ${EXECUTE} > cmd.log
 ./${EXECUTE} > run.log
 ./${EXECUTE} -a > analyze.log
