@@ -1,3 +1,4 @@
 local-avida/
 test-graphs/
 *.dat
+dump/
