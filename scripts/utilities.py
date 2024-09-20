@@ -34,3 +34,11 @@ def read_csv(file_path):
         )
     ]
     return lines
+
+def write_csv(output_path:str, rows:list):
+    header = list(rows[0].keys())
+    header.sort()
+    lines = [ ",".join([str(row[field]) for field in header]) for row in rows]
+    with open(output_path, "w") as fp:
+        fp.write(",".join(header) + "\n")
+        fp.write("\n".join(lines))

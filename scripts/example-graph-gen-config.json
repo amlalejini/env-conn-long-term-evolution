@@ -1,0 +1,28 @@
+{
+  "graphs-to-generate": [
+    {
+      "graph": "well-mixed",
+      "params": {"nodes": 100},
+      "output_id": "wm100"
+    },
+    {
+      "graph": "well-mixed",
+      "params": {"nodes": 10},
+      "output_id": "wm10",
+      "increase_size_to": 20
+    },
+    {
+      "graph": "random-waxman",
+      "params": {"nodes": 100, "beta": 0.4, "alpha": 0.2},
+      "base_seed": 1000,
+      "output_id": "rand-wax-A",
+      "count": 3
+    },
+    {
+      "graph": "random-waxman",
+      "params": {"nodes": 100, "beta": 0.4, "alpha": 0.2, "seed": 3},
+      "output_id": "rand-wax-B",
+      "count": 3
+    }
+  ]
+}
