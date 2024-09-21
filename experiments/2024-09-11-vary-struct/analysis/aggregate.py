@@ -34,7 +34,7 @@ run_cfg_fields = [
 ]
 
 # Fields to pull from phylodiversity.csv file
-phylodiversity_fields = [
+phylodiversity_fields = {
     "mean_evolutionary_distinctiveness",
     "min_evolutionary_distinctiveness",
     "max_evolutionary_distinctiveness",
@@ -47,24 +47,51 @@ phylodiversity_fields = [
     "mrca_depth",
     "diversity",
     "mrca_changes"
-]
+}
 
 # Fields to pull from oee.csv
-oee_fields = [
+oee_fields = {
     "change",
     "novelty",
     "ecology",
     "complexity"
-]
+}
 
 # Fields to pull from dominant.csv
-dominant_fields = [
+dominant_fields = {
     "dominant_lineage_length",
     "dominant_deleterious_steps",
     "dominant_phenotypic_volatility",
     "dominant_unique_phenotypes"
-]
+}
 
+time_fields = {
+    "average_generation"
+}
+
+
+def nearest(target:int, updates:list):
+    return min(updates, key = lambda x:abs(target - x))
+
+def extract_summary_data(data, target_update, fields, prefix=None):
+        info = {}
+
+        # Grab the data line that matches the target update for this run
+        summary_data = [
+            line
+            for line in data
+            if int(line["update"]) == target_update
+        ][-1]
+
+        # Add specified fields to run summary data
+        for field in summary_data:
+            if field in fields:
+                if prefix is None:
+                    info[field] = data
+                else:
+                    info[f"{prefix}_{field}"] = data
+
+        return info
 
 
 def main():
@@ -102,7 +129,7 @@ def main():
         ########################################
         # Extract run parameters
         ########################################
-        run_cfg_path = os.path.join(run_path, "run_params.csv")
+        run_cfg_path = os.path.join(run_path, "data", "run_params.csv")
         run_cfg_data = utils.read_csv(run_cfg_path)
         run_params = {}
         for line in run_cfg_data:
@@ -113,12 +140,134 @@ def main():
             if param in run_cfg_fields:
                 run_summary_info[param] = value
 
-        # TODO:
-        # - phylodiversity.csv
-        # - oee.csv
-        # - dominant.csv
-        # - data/first_task_locs.csv
-        # - data/time.dat (average generation)
+        max_pop_size = int(run_params["WORLD_X"]) * int(run_params["WORLD_Y"])
+
+        ########################################
+        # Extract data from phylodiversity.csv
+        ########################################
+        phylodiversity_path = os.path.join(run_path, "data", "phylodiversity.csv")
+        phylodiversity_data = utils.read_csv(phylodiversity_path)
+
+        # Search for update nearest
+        updates = [int(row["update"]) for row in phylodiversity_data]
+        run_target_update = nearest(target_update, updates)
+        run_summary_info["update"] = run_target_update
+
+        run_summary_info.update(
+            extract_summary_data(
+                data = phylodiversity_data,
+                target_update = run_target_update,
+                fields = phylodiversity_fields,
+                prefix = "phylodiv"
+            )
+        )
+
+        # NOTE - if we wanted time series data, here's where we'd add.
+
+        # Done with phylodiversity data
+        del phylodiversity_data
+
+        ########################################
+        # Extract data from oee.csv
+        ########################################
+        oee_path = os.path.join(run_path, "data", "oee.csv")
+        oee_data = utils.read_csv(oee_path)
+
+        run_summary_info.update(
+            extract_summary_data(
+                data = oee_data,
+                target_update = run_target_update,
+                fields = oee_fields,
+                prefix = "oee"
+            )
+        )
+
+        del oee_data
+
+        ########################################
+        # Extract data from dominant.csv
+        ########################################
+        dominant_path = os.path.join(run_path, "data", "dominant.csv")
+        dominant_data = utils.read_csv(dominant_path)
+
+        run_summary_info.update(
+            extract_summary_data(
+                data = dominant_data,
+                target_update = run_target_update,
+                fields = dominant_fields,
+                prefix = "dominant"
+            )
+        )
+
+        del dominant_data
+
+        ########################################
+        # Extract data from first_task_locs.csv
+        ########################################
+        first_task_locs_path = os.path.join(run_path, "data", "first_task_locs.csv")
+        first_task_locs_data = utils.read_csv(first_task_locs_path)
+
+        first_task_loc_info  = {}
+        for line in first_task_locs_data:
+            task_name = line["task_name"]
+            first_task_loc_info.update({
+                f"task_loc_{task_name}_completed": line["completed"],
+                f"task_loc_{task_name}_loc_id": line["loc_id"],
+                f"task_loc_{task_name}_loc_x": line["loc_x"],
+                f"task_loc_{task_name}_loc_y": line["loc_y"]
+            })
+        run_summary_info.update(first_task_loc_info)
+
+        del first_task_locs_path
+
+        ########################################
+        # Extract data from time.dat
+        ########################################
+        time_path = os.path.join(run_path, "data", "time.dat")
+        time_data = utils.read_avida_dat_file(time_path)
+
+        run_summary_info.update(
+            extract_summary_data(
+                data = time_data,
+                target_update = run_target_update,
+                fields = time_fields,
+                prefix = "time"
+            )
+        )
+
+        del time_data
+
+        ########################################
+        # Extract data from tasks.dat
+        ########################################
+        tasks_path = os.path.join(run_path, "data", "tasks.dat")
+        tasks_data = utils.read_avida_dat_file(tasks_path)
+        tasks_summary_data = extract_summary_data(
+            data = tasks_data,
+            target_update = run_target_update,
+            fields = {field for field in tasks_data[-1] if field != "update"}
+        )
+        # Determine which tasks are completed by > 1% of the population.
+        # Count these tasks as being "covered" by the population.
+        pop_thresh = 0.01 * max_pop_size
+        pop_tasks_completed = {
+            f"pop_task_{task}":int(float(tasks_summary_data[task]) >= pop_thresh)
+            for task in tasks_summary_data
+        }
+        run_summary_info.update(
+            pop_tasks_completed
+        )
+
+        del tasks_data
+
+
+
+
+        # - data/tasks.dat (tasks >1%)
+        # - data/detail-dominant.dat
+        # - data/counts.dat
+
+
 
 
 
