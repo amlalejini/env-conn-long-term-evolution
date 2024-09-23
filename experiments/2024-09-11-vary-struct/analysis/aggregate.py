@@ -7,6 +7,7 @@ This script generates the following output files:
 import argparse
 import os
 import sys
+import pathlib
 
 # Add scripts directory to path, import utilities from scripts directory.
 sys.path.append(
@@ -69,6 +70,10 @@ time_fields = {
     "average_generation"
 }
 
+count_fields = {
+    "number_of_organisms"
+
+}
 
 def nearest(target:int, updates:list):
     return min(updates, key = lambda x:abs(target - x))
@@ -80,19 +85,28 @@ def extract_summary_data(data, target_update, fields, prefix=None):
         summary_data = [
             line
             for line in data
-            if int(line["update"]) == target_update
+            if (target_update is None) or (int(line["update"]) == target_update)
         ][-1]
 
         # Add specified fields to run summary data
         for field in summary_data:
             if field in fields:
                 if prefix is None:
-                    info[field] = data
+                    info[field] = summary_data[field]
                 else:
-                    info[f"{prefix}_{field}"] = data
+                    info[f"{prefix}_{field}"] = summary_data[field]
 
         return info
 
+
+def append_csv(output_path, out_lines, field_order):
+    lines = []
+    for info in out_lines:
+        line = ",".join([str(info[field]) for field in field_order])
+        lines.append(line)
+    out_content = "\n" + "\n".join(lines)
+    with open(output_path, "a") as fp:
+        fp.write(out_content)
 
 def main():
     parser = argparse.ArgumentParser(description = "Run submission script.")
@@ -117,7 +131,7 @@ def main():
     print(f"Found {len(run_dirs)} run directories.")
 
     # For each run directory...
-    summary_header = None
+    # summary_header = None
     summary_content_lines = []
     for run_dir_i in range(len(run_dirs)):
         run_dir = run_dirs[run_dir_i]
@@ -133,7 +147,7 @@ def main():
         run_cfg_data = utils.read_csv(run_cfg_path)
         run_params = {}
         for line in run_cfg_data:
-            param = line["parameter"]
+            param = line["param"]
             value = line["value"]
             run_params[param] = value
             # Add a subset of parameters to summary information for this run.
@@ -170,19 +184,19 @@ def main():
         ########################################
         # Extract data from oee.csv
         ########################################
-        oee_path = os.path.join(run_path, "data", "oee.csv")
-        oee_data = utils.read_csv(oee_path)
+        # oee_path = os.path.join(run_path, "data", "oee.csv")
+        # oee_data = utils.read_csv(oee_path)
 
-        run_summary_info.update(
-            extract_summary_data(
-                data = oee_data,
-                target_update = run_target_update,
-                fields = oee_fields,
-                prefix = "oee"
-            )
-        )
+        # run_summary_info.update(
+        #     extract_summary_data(
+        #         data = oee_data,
+        #         target_update = run_target_update,
+        #         fields = oee_fields,
+        #         prefix = "oee"
+        #     )
+        # )
 
-        del oee_data
+        # del oee_data
 
         ########################################
         # Extract data from dominant.csv
@@ -247,8 +261,15 @@ def main():
             target_update = run_target_update,
             fields = {field for field in tasks_data[-1] if field != "update"}
         )
+        tasks = set(tasks_summary_data.keys())
+        print("Tasks:",tasks)
+
         # Determine which tasks are completed by > 1% of the population.
         # Count these tasks as being "covered" by the population.
+        # for task in tasks_summary_data:
+        #     print(task, tasks_summary_data[task])
+        # print(tasks_data)
+
         pop_thresh = 0.01 * max_pop_size
         pop_tasks_completed = {
             f"pop_task_{task}":int(float(tasks_summary_data[task]) >= pop_thresh)
@@ -260,12 +281,60 @@ def main():
 
         del tasks_data
 
+        ########################################
+        # Extract data from count.dat
+        ########################################
+        # count_path = os.path.join(run_path, "data", "count.dat")
+        # count_data = utils.read_avida_dat_file(count_path)
 
+        # run_summary_info.update(
+        #     extract_summary_data(
+        #         data = count_data,
+        #         target_update = run_target_update,
+        #         fields = count_fields,
+        #         prefix = "count"
+        #     )
+        # )
 
+        # del count_data
 
-        # - data/tasks.dat (tasks >1%)
-        # - data/detail-dominant.dat
-        # - data/counts.dat
+        ########################################
+        # Extract data from detail-dominant.dat
+        ########################################
+        dom_detail_path = os.path.join(run_path, "data", "detail_dominant.dat")
+        dom_detail_fields = {"gestation_time", "genome_length"}
+        dom_detail_fields.update(tasks)
+        if os.path.exists(dom_detail_path):
+            dom_detail_data = utils.read_avida_dat_file(dom_detail_path)
+
+            run_summary_info.update(
+                extract_summary_data(
+                    data = dom_detail_data,
+                    target_update = None,
+                    fields = dom_detail_fields,
+                    prefix = "dom_detail"
+                )
+            )
+
+            del dom_detail_data
+        else:
+            run_summary_info.update(
+                {
+                    f"dom_detail_{task}":"0" for task in tasks
+                }
+            )
+            run_summary_info.update(
+                {"dom_detail_gestation_time":"-1", "dom_detail_genome_length":"-1"}
+            )
+
+        ########################################
+        # Add summary info to summary content lines
+        summary_content_lines.append(run_summary_info)
+
+    # Write summary info out
+    summary_path = os.path.join(dump_dir, "summary.csv")
+    utils.write_csv(summary_path, summary_content_lines)
+
 
 
 
