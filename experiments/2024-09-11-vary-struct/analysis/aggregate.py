@@ -164,6 +164,9 @@ def main():
 
         # Search for update nearest
         updates = [int(row["update"]) for row in phylodiversity_data]
+        if len(updates) == 0:
+            continue
+
         run_target_update = nearest(target_update, updates)
         run_summary_info["update"] = run_target_update
 
