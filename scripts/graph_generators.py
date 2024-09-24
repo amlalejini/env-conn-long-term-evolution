@@ -164,7 +164,6 @@ def gen_graph_wheel(nodes:int):
     graph = nx.wheel_graph(nodes)
     return graph
 
-
 def gen_graph_random_erdos_renyi(nodes:int, edge_prob:float, seed:int):
     """
     Function that generates a random graph structure.
@@ -304,7 +303,6 @@ def _build_clique_ring_internal(
             edges.append((prev_node, next_clique_conn_point))
     return {"nodes": all_nodes, "edges": edges}
 
-
 def gen_graph_hierarchical_clique_ring(
     clique_size:int,
     community_count:int,
@@ -403,6 +401,102 @@ def gen_graph_hierarchical_clique_ring(
 
     return graph
 
+
+def gen_graph_k_regular(k:int, nodes:int, seed:int):
+    """
+    Function generates a k-regular graph.
+    Attributes:
+        k(int): number of degrees of every node
+        nodes(int): number of nodes in the graph
+        seed(int): Positive integer that intializes a random number generator
+
+    Returns:
+        A k-regular Graph on n nodes.
+    """
+    graph = nx.random_regular_graph(k, nodes, seed)
+    return graph
+
+
+def gen_graph_connected_caveman(num_cliques:int, clique_size:int):
+    """
+    Function generates a connected caveman graph.
+    Attributes:
+        num_cliques(int): The indicated number of cliques in the graph.
+        clique_size(int): The size(number of vertices) in each clique
+    Returns:
+        A set of cliques connected via reataching one edge to a neighboring clique along a central cylce such that n cliques form a single unbroken loop (Watts 1999)
+    """
+    graph = nx.connected_caveman_graph(num_cliques, clique_size)
+    return graph 
+
+# TODO See if guranteed connected/enforce connected
+def gen_graph_relaxed_caveman(num_cliques:int, clique_size:int, P_rewiring:float, seed:int):
+    """
+    Function generates a relaxed caveman graph.
+    Attributes:
+        num_cliques(int): The indicated number of cliques in the graph.
+        clique_size(int): The size(number of vertices) in each clique
+        P_rewiring(flaot): The probability of rewiring each edge
+        seed(int): Positive integer that intializes a random number generator
+    Returns:
+        A set of cliques (connected??) with each edge randomly reqired with specified probability to different clique
+    """
+    graph = nx.relaxed_caveman_graph(num_cliques, clique_size, P_rewiring, seed)
+    return graph
+
+# TODO implement
+def gen_graph_detour(kn:int):
+    #make grpah complete graph k-sub-n
+    graph= nx.graph()
+    add
+
+    return graph 
+
+# TODO implement, look more into variations of this graph
+def gen_graph_regular_island(nodes:int, seed:int, island_regularity:int):
+    """
+    Function generates a regular island graph.
+    Attributes:
+        nodes(int): Number of desired nodes in graph
+        seed(int): Positive integer that intializes a random number generator
+        island_regularity: regularity of islands within the graph
+    Returns:
+        ?? split nodes into 2 k-regular graphs then edge swap to connect them
+    """
+    #graph = nx.graph()
+    kreg1= nx.random_regular_graph(island_regularity, nodes/2, seed)
+    kreg2= nx.random_regular_graph(island_regularity, nodes/2, seed)
+
+    graph = nx.compose(kreg1,kreg2)
+
+    #TODO grab nodes from each island
+    kreg1Node =
+    kreg2Node =
+
+                graph.add_edge(kreg2Node, kreg1Node)
+
+
+    
+
+
+    return graph 
+
+# TODO implement
+# TODO probability or number of added edges
+def gen_graph_star_like(nodes:int):
+    """
+    Function generates a star-like graph.
+    Attributes:
+        nodes(int): Number of desired nodes in graph
+        
+    Returns:
+       a star graph graph with randomly added edges(set number or random probability for all vertices tbd)
+    """
+    graph = nx.star_graph(nodes)
+    return graph 
+
+
+
 def add_random_nodes(graph:nx.Graph, new_size:int, seed:Optional[int] = None):
     '''
     Given a networkx graph, add random nodes to increase size to new_size
@@ -428,6 +522,7 @@ def add_random_nodes(graph:nx.Graph, new_size:int, seed:Optional[int] = None):
         next_node_id = get_next_id(next_node_id + 1)
 
 # Make dictionary that associates name with generator function
+
 _graph_generators = {
     "well-mixed": gen_graph_well_mixed,
     "toroidal-lattice": gen_graph_toroidal_lattice,
@@ -442,7 +537,15 @@ _graph_generators = {
     "wheel": gen_graph_wheel,
     "windmill": gen_graph_windmill,
     "clique-ring": gen_graph_clique_ring,
-    "hierarchical-clique-ring": gen_graph_hierarchical_clique_ring
+    "hierarchical-clique-ring": gen_graph_hierarchical_clique_ring,
+    #Newly added by Grant
+    "k-regular": gen_graph_k_regular,
+    "connected_caveman": gen_graph_connected_caveman,
+    "relaxed-caveman": gen_graph_relaxed_caveman,
+    "detour": gen_graph_detour,
+    "regular-island": gen_graph_regular_island,
+    "star-like": gen_graph_star_like,
+
 }
 
 def get_generator_fun(name:str):
