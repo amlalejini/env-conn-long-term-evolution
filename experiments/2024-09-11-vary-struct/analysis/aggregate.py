@@ -278,9 +278,11 @@ def main():
             f"pop_task_{task}":int(float(tasks_summary_data[task]) >= pop_thresh)
             for task in tasks_summary_data
         }
+        pop_tasks_total = sum(pop_tasks_completed[task] for task in pop_tasks_completed)
         run_summary_info.update(
             pop_tasks_completed
         )
+        run_summary_info["pop_task_total"] = pop_tasks_total
 
         del tasks_data
 
@@ -307,6 +309,7 @@ def main():
         dom_detail_path = os.path.join(run_path, "data", "detail_dominant.dat")
         dom_detail_fields = {"gestation_time", "genome_length"}
         dom_detail_fields.update(tasks)
+        dom_tasks_total = 0
         if os.path.exists(dom_detail_path):
             dom_detail_data = utils.read_avida_dat_file(dom_detail_path)
 
@@ -319,6 +322,8 @@ def main():
                 )
             )
 
+            dom_tasks_total = sum([int(run_summary_info[f"dom_detail_{task}"]) for task in tasks])
+
             del dom_detail_data
         else:
             run_summary_info.update(
@@ -329,6 +334,8 @@ def main():
             run_summary_info.update(
                 {"dom_detail_gestation_time":"-1", "dom_detail_genome_length":"-1"}
             )
+
+        run_summary_info["dom_task_total"] = dom_tasks_total
 
         ########################################
         # Add summary info to summary content lines
