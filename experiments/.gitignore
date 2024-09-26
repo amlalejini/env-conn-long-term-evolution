@@ -1,4 +1,6 @@
 *.mat
 test/
+spatial-structs/
+events/
 
 !*.cfg
