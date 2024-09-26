@@ -90,3 +90,38 @@ def read_avida_dat_file(path, backfill_missing_fields=False):
             exit(-1)
         data.append({field:value for field,value in zip(fields, data_line)})
     return data
+
+
+def filter_time_points(all_points, method, resolution):
+    if method == "total":
+        return filter_time_points_total(all_points, resolution)
+    elif method == "interval":
+        return filter_time_points_interval(all_points, resolution)
+    else:
+        return None
+
+def filter_time_points_total(all_points, total):
+    '''
+    Given a sequence of points,
+    sort points and sample 'total' amount of them, evenly distributed.
+    '''
+    sorted_points = sorted(all_points)
+    ids = { i * ((len(all_points) - 1) // (total - 1)) for i in range(total)}
+
+    ids = sorted(list(ids))
+    # If last id isn't final index, make it so.
+    if ids[-1] != (len(sorted_points) - 1):
+        ids[-1] = len(sorted_points) - 1
+
+    return [sorted_points[idx] for idx in ids]
+
+def filter_time_points_interval(all_points, interval, guarantee_final_point=True):
+    '''
+    Given a sequence of points, sample sorted sequence at given interval.
+    Guarant
+    '''
+    sorted_points = sorted(all_points)
+    return [
+        sorted_points[i] for i in range(len(sorted_points))
+        if (i == 0) or (not (i % interval)) or (guarantee_final_point and (i == (len(sorted_points) - 1)))
+    ]
