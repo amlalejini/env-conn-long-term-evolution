@@ -6,7 +6,7 @@ Many of the functions from this are copied / adapted from those in this reposito
     https://github.com/amlalejini/alife-2024-spatial-chem-eco
 '''
 #TODO input validation/ edge case testing
-
+print
 import random
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -195,8 +195,8 @@ def gen_graph_random_erdos_renyi(nodes:int, edge_prob:float, seed:int):
 
     """
     graph = nx.erdos_renyi_graph(nodes, edge_prob, seed)
-    print(graph.nodes)
-    print(graph.edges)
+    #print(graph.nodes)
+    #print(graph.edges)
     return graph
 
 def gen_graph_random_barabasi_albert(nodes:int, edges:int, seed:int):
@@ -511,8 +511,7 @@ def gen_graph_star_like(nodes:int, added_connections:int, seed:int):
         #For all nodes n, add edge between n and center node
         list_edges.append((0,node))
     graph.add_nodes_from(list_nodes) 
-    print(list_nodes)
-    print(list_edges)
+   
 
     #ensure the number of added connections is correct
     while(len(list_edges) < (nodes -1 + added_connections)):
@@ -532,7 +531,6 @@ def gen_graph_star_like(nodes:int, added_connections:int, seed:int):
             #add edge if edge does not already exist
             if (node1,node1) not in list_edges:
                 list_edges.append((node1,node2))
-                print("edge appended")
     graph.add_edges_from(list_edges)
     return graph
 
@@ -568,7 +566,6 @@ def gen_graph_probabilistic_star_like(nodes:int, P_connection:float, seed:int):
         n2 = random.choice(list_nodes)
         #if edge already exist, append or loop, reassign n2
         while((n,n2) in list_edges or n == n2):
-            print(str(n) + "," + str(n2))
             n2 = random.choice(list_nodes)
  
         if random.random() <= P_connection:
@@ -622,9 +619,9 @@ _graph_generators = {
     "clique-ring": gen_graph_clique_ring,
     "hierarchical-clique-ring": gen_graph_hierarchical_clique_ring,
     #Newly added by Grant
-    "random_k-regular": gen_graph_random_k_regular,
+    "random-k-regular": gen_graph_random_k_regular,
     #"ring-k-regular": gen_graph_ring_k_regular,
-    "connected_caveman": gen_graph_connected_caveman,
+    "connected-caveman": gen_graph_connected_caveman,
     "relaxed-caveman": gen_graph_relaxed_caveman,
     #"detour": gen_graph_detour,
     #"regular-island": gen_graph_regular_island,

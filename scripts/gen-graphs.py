@@ -87,7 +87,7 @@ defaults = {
     "relaxed-caveman":{
         "num_cliques": 10,
         "clique_size": 8,
-        "P_reqiring" : 0.4,
+        "P_rewiring" : 0.4,
         "seed": None
     },
     "star-like":{
@@ -95,7 +95,7 @@ defaults = {
         "added_connections": 20,
         "seed": None
     },
-    "probobalistic-star-like":{
+    "probabilistic-star-like":{
         "nodes": 100,
         "P_connection": 0.3,
         "seed": None

@@ -82,6 +82,12 @@ combos.add_val(
         "linear-chain",
         "clique-ring",
         "hierarchical-clique-ring"
+        "random-k-regular",
+        "connected-caveman",
+        "relaxed-caveman",
+        "star-like",
+        "probabilistic-star-like"
+        
     ]
 )
 

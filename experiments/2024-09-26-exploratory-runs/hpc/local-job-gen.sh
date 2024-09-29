@@ -8,7 +8,7 @@ JOB_MEM=8G
 PROJECT_NAME=env-conn-long-term-evolution
 RUNS_PER_SUBDIR=950
 
-REPO_DIR=/home/grant/${PROJECT_NAME}
+REPO_DIR=/home/grant/research/${PROJECT_NAME}
 REPO_SCRIPTS_DIR=${REPO_DIR}/scripts
 HOME_EXP_DIR=${REPO_DIR}/experiments/${EXP_SLUG}
 GRAPHS_DIR=${HOME_EXP_DIR}/hpc/spatial-structs
