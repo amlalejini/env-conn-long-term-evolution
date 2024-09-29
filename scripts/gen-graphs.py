@@ -74,7 +74,33 @@ defaults = {
         "layers": 2,
         "nodes_between_communities": 2,
         "seed": None
+    },
+    "random-k-regular":{
+        "k":10,
+        "nodes": 100,
+        "seed": None
+    },
+    "connected-caveman":{
+        "num_cliques": 10,
+        "clique_size": 8
+    },
+    "relaxed-caveman":{
+        "num_cliques": 10,
+        "clique_size": 8,
+        "P_reqiring" : 0.4,
+        "seed": None
+    },
+    "star-like":{
+        "nodes": 100,
+        "added_connections": 20,
+        "seed": None
+    },
+    "probobalistic-star-like":{
+        "nodes": 100,
+        "P_connection": 0.3,
+        "seed": None
     }
+    
 }
 
 output_modes = {
