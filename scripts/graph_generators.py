@@ -5,11 +5,31 @@ networkx objects).
 Many of the functions from this are copied / adapted from those in this repository:
     https://github.com/amlalejini/alife-2024-spatial-chem-eco
 '''
+#TODO input validation/ edge case testing
 
 import random
 import networkx as nx
 import matplotlib.pyplot as plt
 from typing import Optional
+
+# def main():
+#     #gen_graph_random_k_regular(4,8,1000)
+#     #gen_graph_connected_caveman(4,4)
+#     #gen_graph_connected_caveman(10,5)
+#     # gen_graph_relaxed_caveman(4,4,0.5,1000)
+#     # gen_graph_relaxed_caveman(4,4,0.1,1000)
+#     # gen_graph_relaxed_caveman(4,4,1.0,1000)
+#     # gen_graph_relaxed_caveman(4,4,0.5,1000)
+#     #gen_graph_star_like(10,3,1000)
+#     #gen_graph_star_like(5,1,1000)
+#     #gen_graph_star_like(20,0,1000)
+#     # gen_graph_probabilistic_star_like(10,0.1,1000)
+#     # gen_graph_probabilistic_star_like(10,0.1,1001)
+#     # gen_graph_probabilistic_star_like(10,0.1,1002)
+#     # gen_graph_probabilistic_star_like(10,0.1,1003)
+
+
+
 
 def gen_graph_well_mixed(nodes:int):
     """
@@ -402,7 +422,7 @@ def gen_graph_hierarchical_clique_ring(
     return graph
 
 
-def gen_graph_k_regular(k:int, nodes:int, seed:int):
+def gen_graph_random_k_regular(k:int, nodes:int, seed:int):
     """
     Function generates a k-regular graph.
     Attributes:
@@ -411,11 +431,25 @@ def gen_graph_k_regular(k:int, nodes:int, seed:int):
         seed(int): Positive integer that intializes a random number generator
 
     Returns:
-        A k-regular Graph on n nodes.
+        A random k-regular Graph on n nodes.
     """
     graph = nx.random_regular_graph(k, nodes, seed)
     return graph
 
+#TODO implement
+def gen_graph_ring_k_regular(k:int, nodes:int,):
+    """
+    Function algorithmically generates a k-regular graph.
+    Attributes:
+        k(int): number of degrees of every node
+        nodes(int): number of nodes in the graph
+    Returns:
+        A ring-like k-regular Graph on n nodes.
+    """
+    
+    graph = nx.graph()
+
+    return graph
 
 def gen_graph_connected_caveman(num_cliques:int, clique_size:int):
     """
@@ -430,6 +464,10 @@ def gen_graph_connected_caveman(num_cliques:int, clique_size:int):
     return graph 
 
 # TODO See if guranteed connected/enforce connected
+
+#allows for loops
+#dont think graph can be disconnected but TODO add try catch
+#can generate "chain of clique" esq structure
 def gen_graph_relaxed_caveman(num_cliques:int, clique_size:int, P_rewiring:float, seed:int):
     """
     Function generates a relaxed caveman graph.
@@ -444,56 +482,101 @@ def gen_graph_relaxed_caveman(num_cliques:int, clique_size:int, P_rewiring:float
     graph = nx.relaxed_caveman_graph(num_cliques, clique_size, P_rewiring, seed)
     return graph
 
-# TODO implement
-def gen_graph_detour(kn:int):
-    #make grpah complete graph k-sub-n
-    graph= nx.graph()
-    add
 
-    return graph 
-
-# TODO implement, look more into variations of this graph
-def gen_graph_regular_island(nodes:int, seed:int, island_regularity:int):
-    """
-    Function generates a regular island graph.
-    Attributes:
-        nodes(int): Number of desired nodes in graph
-        seed(int): Positive integer that intializes a random number generator
-        island_regularity: regularity of islands within the graph
-    Returns:
-        ?? split nodes into 2 k-regular graphs then edge swap to connect them
-    """
-    #graph = nx.graph()
-    kreg1= nx.random_regular_graph(island_regularity, nodes/2, seed)
-    kreg2= nx.random_regular_graph(island_regularity, nodes/2, seed)
-
-    graph = nx.compose(kreg1,kreg2)
-
-    #TODO grab nodes from each island
-    kreg1Node =
-    kreg2Node =
-
-                graph.add_edge(kreg2Node, kreg1Node)
-
-
-    
-
-
-    return graph 
-
-# TODO implement
-# TODO probability or number of added edges
-def gen_graph_star_like(nodes:int):
+def gen_graph_star_like(nodes:int, added_connections:int, seed:int):
     """
     Function generates a star-like graph.
     Attributes:
         nodes(int): Number of desired nodes in graph
+        added_connections(int) the number of edges added randomly between pre-existing nodes
+        seed(int): Positive integer that intializes a random number generator
         
     Returns:
        a star graph graph with randomly added edges(set number or random probability for all vertices tbd)
     """
-    graph = nx.star_graph(nodes)
-    return graph 
+    graph = nx.Graph()
+
+    # If seed provided, reset random number generator with that seed.
+    if not seed is None:
+        random.seed(seed)
+    #declare variables
+    center_node = 0
+    list_nodes = []
+    list_nodes.append(center_node)
+    list_edges = []
+   
+    #instantiate nodes
+    for node in range(1, nodes):
+        list_nodes.append(node)
+        #For all nodes n, add edge between n and center node
+        list_edges.append((0,node))
+    graph.add_nodes_from(list_nodes) 
+    print(list_nodes)
+    print(list_edges)
+
+    #ensure the number of added connections is correct
+    while(len(list_edges) < (nodes -1 + added_connections)):
+
+    #add new connections to graph
+        for i in range (0, added_connections):
+        #assign node1 any node other than center node
+            node1 = random.choice(list_nodes)
+            while(node1 == 0):
+                node1 = random.choice(list_nodes)
+            #find unique(not center or node1) node2 
+            node2 = random.choice(list_nodes)
+            while(node2 == 0 or node2 == node1):
+                node2 = random.choice(list_nodes)
+                print( str(node1) + "," + str(node2))
+
+            #add edge if edge does not already exist
+            if (node1,node1) not in list_edges:
+                list_edges.append((node1,node2))
+                print("edge appended")
+    graph.add_edges_from(list_edges)
+    return graph
+
+def gen_graph_probabilistic_star_like(nodes:int, P_connection:float, seed:int):
+    """
+    Function generates a star-like graph.
+    Attributes:
+        nodes(int): Number of desired nodes in graph
+        added_connections(int) the number of edges added randomly between pre-existing nodes
+        P_connecitons(flaot): Probability that each node generates a new edge between random node in graph
+        seed(int): Positive integer that intializes a random number generator
+
+    Returns:
+       a star graph graph with randomly added edges(random probability for all vertices)
+    """
+    graph=nx.Graph()
+    
+    center_node = 0
+    list_nodes = []
+    list_nodes.append(center_node)
+    list_edges = []
+
+    #instantiate nodes
+    for node in range(1, nodes):
+        list_nodes.append(node)
+        #For all nodes n, add edge between n and center node
+        list_edges.append((0,node))
+    graph.add_nodes_from(list_nodes) 
+    
+    #for every node randomly add edge
+    for n in range(1,nodes):
+        #randomly select second node
+        n2 = random.choice(list_nodes)
+        #if edge already exist, append or loop, reassign n2
+        while((n,n2) in list_edges or n == n2):
+            print(str(n) + "," + str(n2))
+            n2 = random.choice(list_nodes)
+ 
+        if random.random() <= P_connection:
+            list_edges.append((n,n2))
+    #convert to nxgraph
+    graph.add_nodes_from(list_nodes)
+    graph.add_edges_from(list_edges)
+    return graph
 
 
 
@@ -539,15 +622,17 @@ _graph_generators = {
     "clique-ring": gen_graph_clique_ring,
     "hierarchical-clique-ring": gen_graph_hierarchical_clique_ring,
     #Newly added by Grant
-    "k-regular": gen_graph_k_regular,
+    "random_k-regular": gen_graph_random_k_regular,
+    #"ring-k-regular": gen_graph_ring_k_regular,
     "connected_caveman": gen_graph_connected_caveman,
     "relaxed-caveman": gen_graph_relaxed_caveman,
-    "detour": gen_graph_detour,
-    "regular-island": gen_graph_regular_island,
+    #"detour": gen_graph_detour,
+    #"regular-island": gen_graph_regular_island,
     "star-like": gen_graph_star_like,
+    "probabilistic-star-like": gen_graph_probabilistic_star_like
 
 }
-
+ 
 def get_generator_fun(name:str):
     return _graph_generators[name]
 
@@ -557,3 +642,61 @@ def get_generator_fun(name:str):
 #     community_count= 3,
 #     nodes_between_communities = 4
 # )
+
+
+# nx.draw(
+    #     graph,
+    #     pos = nx.spring_layout(graph, iterations=10000),
+    #     with_labels = True,
+    #     # labels = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())],
+    #     node_color = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())]
+    # )
+    # plt.show()
+
+
+
+
+
+
+#Detour graph removed since at large scale we predict similar results to complete graph
+
+# TODO implement, look more into variations of this graph
+# def gen_graph_regular_island(nodes:int, seed:int, island_regularity:int, num_islands:int, inter_island_connections:int):
+#     """
+#     Function generates a regular island graph.
+#     Attributes:
+#         nodes(int): Number of desired nodes in graph
+#         seed(int): Positive integer that intializes a random number generator
+#         island_regularity: regularity of islands within the graph
+#         num_islands(int): the number of islands within the graph
+#         inter_island_connections(int): the number of islands any given island is adjacent to
+#     Returns:
+#         An Island is a k-regular component. This returns n islands connected to one or more other islands 
+#     """
+#     #instantiate graph
+#     graph = nx.graph()
+#     island_size = nodes/num_islands
+#     #create islands
+#     for i in range(num_islands):
+#         island = nx.random_regular_graph(island_regularity, island_size, seed)
+#         #set node labels to unique value
+#         nx.convert_node_labels_to_integers(island, i * island_size)
+#         #add island to graph
+#         nx.compose(graph,island)
+#     #list of nodes and their islands
+#     islands = [ [(n * island_size) + s for s in range(island_size)] for n in range(num_islands)]
+
+#     #add connections between islands
+#     for i in range(num_islands):      
+#         #remaining island = islands - islands[i]
+#         remaining_islands = [r for r in islands if r != islands[i]]
+#         #for however many connections wanted
+#         for j in range (inter_island_connections):              
+#             #node 1 = random choice of node from island i
+#             node1 = random.choice(islands[i])
+#             #node2 - random choice of node from random choide of remaining islands 
+#             node2 = random.choice(random.choice[remaining_islands])
+    # return graph 
+
+# if __name__ == "__main__":
+#     main()
