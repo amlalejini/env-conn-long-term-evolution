@@ -1,0 +1,37 @@
+{
+    "graphs-to-generate": [
+      {
+        "graph": "connected-caveman",
+        
+        "params": {"num_cliques":59, "clique_size":59},
+        "increase_size_to": 3600
+      },
+      {
+        "graph": "relaxed-caveman",
+        "params": {"num_cliques":59, "clique_size":59, "P_rewiring":0.3},
+        "base_seed":1000,
+        "increase_size_to":3600,
+        "count":50
+      },
+      {
+        "graph": "star-like",
+        "params": {"nodes":3600, "added_connections":1200},
+        "base_seed":1000,
+        "count":50
+
+      },
+      {
+        "graph": "probabilistic-star-like",
+        "params": {"nodes":3600, "P_connections":0.3},
+        "base_seed":1000,
+        "count":50
+      },
+      {
+        "graph": "random-k-regular",
+        "params": {"k":5, "nodes":3600},
+        "base_seed":1000,
+        "count": 50
+      }
+      
+    ]
+  }

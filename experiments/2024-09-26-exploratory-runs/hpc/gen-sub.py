@@ -74,20 +74,20 @@ combos.register_var("spatial_structure__DYNAMIC")
 combos.add_val(
     "spatial_structure__DYNAMIC",
     [
-        "well-mixed",
-        "torroidal-lattice",
-        "star",
-        "random-waxman",
-        "comet-kite",
-        "linear-chain",
-        "clique-ring",
-        "hierarchical-clique-ring"
-        "random-k-regular",
+        # "well-mixed",
+        # "torroidal-lattice",
+        # "star",
+        # "random-waxman",
+        # "comet-kite",
+        # "linear-chain",
+        # "clique-ring",
+        # "hierarchical-clique-ring"
         "connected-caveman",
         "relaxed-caveman",
         "star-like",
-        "probabilistic-star-like"
-        
+        "probabilistic-star-like",
+        "random-k-regular"
+
     ]
 )
 
