@@ -415,7 +415,7 @@ def main():
         ########################################
         dom_detail_path = os.path.join(run_path, "data", "detail_dominant.dat")
         dom_detail_fields = {"gestation_time", "genome_length"}
-        dom_detail_fields.update(tasks)
+        # dom_detail_fields.update(tasks)
         dom_tasks_total = 0
         if os.path.exists(dom_detail_path):
             dom_detail_data = utils.read_avida_dat_file(dom_detail_path)
@@ -442,7 +442,7 @@ def main():
                 {"dom_detail_gestation_time":"-1", "dom_detail_genome_length":"-1"}
             )
 
-        run_summary_info["dom_task_total"] = dom_tasks_total
+        # run_summary_info["dom_task_total"] = dom_tasks_total
 
         ########################################
         # Add summary info to summary content lines
