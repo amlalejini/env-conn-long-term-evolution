@@ -12,21 +12,37 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from typing import Optional
 
-# def main():
-#     #gen_graph_random_k_regular(4,8,1000)
-#     #gen_graph_connected_caveman(4,4)
-#     #gen_graph_connected_caveman(10,5)
-#     # gen_graph_relaxed_caveman(4,4,0.5,1000)
-#     # gen_graph_relaxed_caveman(4,4,0.1,1000)
-#     # gen_graph_relaxed_caveman(4,4,1.0,1000)
-#     # gen_graph_relaxed_caveman(4,4,0.5,1000)
-#     #gen_graph_star_like(10,3,1000)
-#     #gen_graph_star_like(5,1,1000)
-#     #gen_graph_star_like(20,0,1000)
-#     # gen_graph_probabilistic_star_like(10,0.1,1000)
-#     # gen_graph_probabilistic_star_like(10,0.1,1001)
-#     # gen_graph_probabilistic_star_like(10,0.1,1002)
-#     # gen_graph_probabilistic_star_like(10,0.1,1003)
+def main():
+    #gen_graph_random_k_regular(4,8,1000)
+    #gen_graph_connected_caveman(4,4)
+    #gen_graph_connected_caveman(10,5)
+    # gen_graph_relaxed_caveman(4,4,0.5,1000)
+    # gen_graph_relaxed_caveman(4,4,0.1,1000)
+    # gen_graph_relaxed_caveman(4,4,1.0,1000)
+    # gen_graph_relaxed_caveman(4,4,0.5,1000)
+    #gen_graph_star_like(10,3,1000)
+    #gen_graph_star_like(5,1,1000)
+    #gen_graph_star_like(20,0,1000)
+    # gen_graph_probabilistic_star_like(10,0.1,1000)
+    # gen_graph_probabilistic_star_like(10,0.1,1001)
+    # gen_graph_probabilistic_star_like(10,0.1,1002)
+    # gen_graph_probabilistic_star_like(10,0.1,1003)
+    # gen_graph_ring_k_regular(8,4)
+    # gen_graph_ring_k_regular(20,4)
+    # gen_graph_ring_k_regular(10,2)        
+    # gen_graph_ring_k_regular(30,4)
+    #gen_graph_ring_k_regular(20,8)
+
+    # gen_graph_ring_k_regular(30,3)
+    # #gen_graph_ring_k_regular(10,3)
+    # #gen_graph_ring_k_regular(8,3)
+    # gen_graph_ring_k_regular(50,7)
+    gen_graph_ring_k_regular(100,3)
+
+    gen_graph_ring_k_regular(100,5)
+    gen_graph_ring_k_regular(100,7)
+    gen_graph_ring_k_regular(100,9)
+    gen_graph_ring_k_regular(100,15)
 
 
 
@@ -526,7 +542,7 @@ def gen_graph_star_like(nodes:int, added_connections:int, seed:int):
             node2 = random.choice(list_nodes)
             while(node2 == 0 or node2 == node1):
                 node2 = random.choice(list_nodes)
-                print( str(node1) + "," + str(node2))
+                #print( str(node1) + "," + str(node2))
 
             #add edge if edge does not already exist
             if (node1,node1) not in list_edges:
@@ -575,6 +591,59 @@ def gen_graph_probabilistic_star_like(nodes:int, P_connection:float, seed:int):
     graph.add_edges_from(list_edges)
     return graph
 
+def gen_graph_ring_k_regular(nodes:int, k:int):
+    if (nodes * k) % 2 != 0:
+        raise Exception("impossible to generate k-regular graph given inputs")
+    graph = nx.Graph()
+    list_nodes = []
+    list_edges = []
+    #instantiate nodes
+    for n in range(nodes):
+        list_nodes.append(n)
+    #2 different methods for odd and even k's
+    if k %2 ==0:
+       for node in range(nodes):
+            endpoints =[]
+            endpoint1 = node
+            for i in range(1,int(k/2) + 1):
+                #add k nearest neighbors to list of other endpoints, think of nodes in a circle
+                endpoints.append(list_nodes[(node +i) % len(list_nodes)])
+                endpoints.append(list_nodes[(node -i) % len(list_nodes)])
+                
+                for endpoint2 in endpoints:
+                    if (endpoint1,endpoint2) not in list_edges:
+                        list_edges.append((endpoint1, endpoint2))
+
+    #if k odd
+    else:
+        for node in range(nodes):
+            endpoints = []
+            endpoint1 = node
+            for i in range(1, int(k/2) +1):
+                #add k nearest neighbors to list of other endpoints, think of nodes in a circle
+                endpoints.append(list_nodes[(node +i) % len(list_nodes)])
+                endpoints.append(list_nodes[(node -i) % len(list_nodes)])
+                #add node opposite node 
+                endpoints.append(list_nodes[( (node + (int(len(list_nodes)/2)))) % len(list_nodes)])
+            
+            #add edges to grpah
+            for endpoint2 in endpoints:
+                if (endpoint1,endpoint2) not in list_edges:
+                        list_edges.append((endpoint1, endpoint2))   
+    print(list_nodes)
+    print(list_edges)
+    graph.add_nodes_from(list_nodes)
+    graph.add_edges_from(list_edges)                  
+
+    nx.draw(
+            graph,
+            pos = nx.spring_layout(graph, iterations=10000),
+            with_labels = True,
+            # labels = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())],
+            #node_color = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())]
+        )
+    plt.show()
+    return graph
 
 
 def add_random_nodes(graph:nx.Graph, new_size:int, seed:Optional[int] = None):
@@ -626,7 +695,8 @@ _graph_generators = {
     #"detour": gen_graph_detour,
     #"regular-island": gen_graph_regular_island,
     "star-like": gen_graph_star_like,
-    "probabilistic-star-like": gen_graph_probabilistic_star_like
+    "probabilistic-star-like": gen_graph_probabilistic_star_like,
+    "ring-k-regular": gen_graph_ring_k_regular
 
 }
  
@@ -695,5 +765,5 @@ def get_generator_fun(name:str):
 #             node2 = random.choice(random.choice[remaining_islands])
     # return graph 
 
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    main()
