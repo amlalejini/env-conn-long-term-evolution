@@ -429,15 +429,15 @@ def main():
                 )
             )
 
-            dom_tasks_total = sum([int(run_summary_info[f"dom_detail_{task}"]) for task in tasks])
+            # dom_tasks_total = sum([int(run_summary_info[f"dom_detail_{task}"]) for task in tasks])
 
             del dom_detail_data
         else:
-            run_summary_info.update(
-                {
-                    f"dom_detail_{task}":"0" for task in tasks
-                }
-            )
+            # run_summary_info.update(
+            #     {
+            #         f"dom_detail_{task}":"0" for task in tasks
+            #     }
+            # )
             run_summary_info.update(
                 {"dom_detail_gestation_time":"-1", "dom_detail_genome_length":"-1"}
             )
