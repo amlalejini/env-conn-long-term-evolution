@@ -59,6 +59,8 @@ phylodiversity_fields_summary = {
 phylodiversity_fields_time_series = {
     "current_phylogenetic_diversity",
     "diversity",
+    "mrca_changes",
+    "ave_depth"
 }
 
 # Fields to pull from oee.csv
