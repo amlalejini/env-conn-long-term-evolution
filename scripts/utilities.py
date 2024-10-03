@@ -125,3 +125,15 @@ def filter_time_points_interval(all_points, interval, guarantee_final_point=True
         sorted_points[i] for i in range(len(sorted_points))
         if (i == 0) or (not (i % interval)) or (guarantee_final_point and (i == (len(sorted_points) - 1)))
     ]
+
+def get_tasks_from_environment_file(file_path):
+    content = None
+    with open(file_path, "r") as fp:
+        content = fp.read().strip().split("\n")
+    # REACTION  NOT  not   process:value=1.0:type=pow  requisite:max_count=1
+    reaction_lines = [line for line in content if line.startswith("REACTION")]
+    task_names = []
+    for line in reaction_lines:
+        split_line = [word for word in line.split(" ") if word != ""]
+        task_names.append(split_line[2])
+    return task_names
