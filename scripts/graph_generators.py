@@ -9,7 +9,7 @@ Many of the functions from this are copied / adapted from those in this reposito
 print
 import random
 import networkx as nx
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 from typing import Optional
 
 # def main():
