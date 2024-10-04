@@ -17,8 +17,8 @@
         
         "params": {"core_size":600, "num_tails":50, "additional_tail_nodes": 2950},
         "base_seed":1000,
-        "output_id": "comet-kite-med-core-50tail"
-
+        "output_id": "comet-kite-med-core-50tail",
+        "count": 50
       },
       {
         "graph": "comet-kite",
