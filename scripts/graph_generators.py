@@ -12,7 +12,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from typing import Optional
 
-def main():
+# def main():
     #gen_graph_random_k_regular(4,8,1000)
     #gen_graph_connected_caveman(4,4)
     #gen_graph_connected_caveman(10,5)
@@ -37,13 +37,16 @@ def main():
     # #gen_graph_ring_k_regular(10,3)
     # #gen_graph_ring_k_regular(8,3)
     # gen_graph_ring_k_regular(50,7)
-    gen_graph_ring_k_regular(100,3)
+    #gen_graph_ring_k_regular(100,3)
 
-    gen_graph_ring_k_regular(100,5)
-    gen_graph_ring_k_regular(100,7)
-    gen_graph_ring_k_regular(100,9)
-    gen_graph_ring_k_regular(100,15)
-
+    # gen_graph_ring_k_regular(100,5)
+    # gen_graph_ring_k_regular(100,7)
+    # gen_graph_ring_k_regular(100,7)
+    # gen_graph_ring_k_regular(100,9)
+    # gen_graph_ring_k_regular(100,15)
+    # gen_graph_ring_k_regular(100,17)
+    # gen_graph_ring_k_regular(100,10)
+    #gen_graph_hierarchical_k_regular(1, 2, 3, 1)
 
 
 
@@ -591,10 +594,9 @@ def gen_graph_probabilistic_star_like(nodes:int, P_connection:float, seed:int):
     graph.add_edges_from(list_edges)
     return graph
 
-def gen_graph_ring_k_regular(nodes:int, k:int):
+def gen_graph_ring_k_regular(nodes:int, k:int, return_nxGraph:bool = True):
     if (nodes * k) % 2 != 0:
         raise Exception("impossible to generate k-regular graph given inputs")
-    graph = nx.Graph()
     list_nodes = []
     list_edges = []
     #instantiate nodes
@@ -630,20 +632,66 @@ def gen_graph_ring_k_regular(nodes:int, k:int):
             for endpoint2 in endpoints:
                 if (endpoint1,endpoint2) not in list_edges:
                         list_edges.append((endpoint1, endpoint2))   
-    print(list_nodes)
-    print(list_edges)
-    graph.add_nodes_from(list_nodes)
-    graph.add_edges_from(list_edges)                  
-
+    if return_nxGraph:
+        graph = nx.Graph()
+        graph.add_nodes_from(list_nodes)
+        graph.add_edges_from(list_edges)     
+    else: 
+        graph = {"nodes": list_nodes, "edges": list_edges}
     nx.draw(
-            graph,
-            pos = nx.spring_layout(graph, iterations=10000),
-            with_labels = True,
-            # labels = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())],
-            #node_color = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())]
-        )
+        graph,
+        pos = nx.spring_layout(graph, iterations=10000),
+        with_labels = True,
+    )
     plt.show()
     return graph
+
+# def gen_graph_hierarchical_k_regular(layers:int, k:int, layer_size:int, connection_path_size:int):
+#     graph = nx.Graph()
+#     if layers == 0:
+#         return gen_graph_ring_k_regular(layer_size,k,False)
+#     else:
+#         #generate k-regular
+#         # repalce each node with one smaller layer k-reg
+#         #
+        
+#         #toplayer = k-regular graph
+#         toplayer = gen_graph_ring_k_regular(layer_size,k,False)
+#         #every node becomes lower layer k-regular
+#         for node in toplayer["nodes"]:
+#             toplayer["nodes"][node] = gen_graph_hierarchical_k_regular(layers -1, k, layer_size, connection_path_size)["nodes"]
+
+# #TODO rename nodes
+#         for subList in toplayer["ndoes"]:
+#             for node in sublist
+
+#         for edge in toplayer["edges"]:
+#             endpoint1 = random.choice(toplayer["nodes"][edge[0]])
+#             endpoint2 = random.choice(toplayer["nodes"][edge[1]])
+#             if connection_path_size == 0:
+#                 toplayer["edges"][edge] = (endpoint1, endpoint2)
+#             else:
+#                 #TODO ?? ensure that connecting-cahin-nodes are not selected for future endpoints
+#                 #create connection chains
+#                 #this wont work but I think this is the gist
+#                 for i in range(1, connection_path_size):
+#                     toplayer["nodes"].append(toplayer["nodes"][-1][-1] + i)
+#                     toplayer["edges"].append((endpoint1,toplayer["nodes"][-1][-1]))
+#                 toplayer["edges"].append((toplayer["nodes"][-1][-1],endpoint2))
+                
+
+#     # graph.add_nodes_from(toplayer["nodes"])
+#     # graph.add_edges_from(toplayer["edges"])
+#     #print(graph)
+#     print(toplayer)
+#     # nx.draw(
+#     #         graph,
+#     #         pos = nx.spring_layout(graph, iterations=10000),
+#     #         with_labels = True,
+#     #     )
+#     # plt.show()
+
+# #     return graph
 
 
 def add_random_nodes(graph:nx.Graph, new_size:int, seed:Optional[int] = None):
@@ -689,7 +737,6 @@ _graph_generators = {
     "hierarchical-clique-ring": gen_graph_hierarchical_clique_ring,
     #Newly added by Grant
     "random-k-regular": gen_graph_random_k_regular,
-    #"ring-k-regular": gen_graph_ring_k_regular,
     "connected-caveman": gen_graph_connected_caveman,
     "relaxed-caveman": gen_graph_relaxed_caveman,
     #"detour": gen_graph_detour,
@@ -715,8 +762,6 @@ def get_generator_fun(name:str):
     #     graph,
     #     pos = nx.spring_layout(graph, iterations=10000),
     #     with_labels = True,
-    #     # labels = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())],
-    #     node_color = [color_map[node] if node in color_map else num_clique_rings+1 for node in list(graph.nodes())]
     # )
     # plt.show()
 
@@ -727,43 +772,5 @@ def get_generator_fun(name:str):
 
 #Detour graph removed since at large scale we predict similar results to complete graph
 
-# TODO implement, look more into variations of this graph
-# def gen_graph_regular_island(nodes:int, seed:int, island_regularity:int, num_islands:int, inter_island_connections:int):
-#     """
-#     Function generates a regular island graph.
-#     Attributes:
-#         nodes(int): Number of desired nodes in graph
-#         seed(int): Positive integer that intializes a random number generator
-#         island_regularity: regularity of islands within the graph
-#         num_islands(int): the number of islands within the graph
-#         inter_island_connections(int): the number of islands any given island is adjacent to
-#     Returns:
-#         An Island is a k-regular component. This returns n islands connected to one or more other islands 
-#     """
-#     #instantiate graph
-#     graph = nx.graph()
-#     island_size = nodes/num_islands
-#     #create islands
-#     for i in range(num_islands):
-#         island = nx.random_regular_graph(island_regularity, island_size, seed)
-#         #set node labels to unique value
-#         nx.convert_node_labels_to_integers(island, i * island_size)
-#         #add island to graph
-#         nx.compose(graph,island)
-#     #list of nodes and their islands
-#     islands = [ [(n * island_size) + s for s in range(island_size)] for n in range(num_islands)]
-
-#     #add connections between islands
-#     for i in range(num_islands):      
-#         #remaining island = islands - islands[i]
-#         remaining_islands = [r for r in islands if r != islands[i]]
-#         #for however many connections wanted
-#         for j in range (inter_island_connections):              
-#             #node 1 = random choice of node from island i
-#             node1 = random.choice(islands[i])
-#             #node2 - random choice of node from random choide of remaining islands 
-#             node2 = random.choice(random.choice[remaining_islands])
-    # return graph 
-
-if __name__ == "__main__":
-    main()
+# if __name__ == "__main__":
+#     main()

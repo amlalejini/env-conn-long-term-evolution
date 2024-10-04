@@ -99,6 +99,10 @@ defaults = {
         "nodes": 100,
         "P_connection": 0.3,
         "seed": None
+    },
+    "ring-k-regular":{
+        "nodes": 100,
+        "k": 10
     }
     
 }

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-REPLICATES=3
+REPLICATES=2
 EXP_SLUG=2024-09-26-exploratory-runs
 SEED_OFFSET=1000
 JOB_TIME=32:00:00
