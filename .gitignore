@@ -41,6 +41,9 @@ debug_file
 .DS_Store
 .vscode
 
+experiments/2024-06-12-nature2003/hpcc_run_data/
+pyEnv/
+third-party/avida/
 __pycache__
 
 *.csv
