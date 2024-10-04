@@ -75,20 +75,48 @@ combos.add_val(
     "spatial_structure__DYNAMIC",
     [
         # "well-mixed",
-        # "torroidal-lattice",
+         "torroidal-lattice",
         # "star",
         # "random-waxman",
         # "comet-kite",
         # "linear-chain",
         # "clique-ring",
         # "hierarchical-clique-ring"
-        "connected-caveman",
-        "relaxed-caveman",
-        "star-like",
-        "probabilistic-star-like",
-        "random-k-regular"
+        "comet-kite-large-core-50tial",
+        "comet-kite-med-core-50tail",
+        "comet-kite-small-core-50tail",
+        
+        "random-erdos-renyi-0.5",
+        "random-erdos-renyi-0.7",
+        "random-erdos-renyi-0.3",
+        
+        'cycle',
+        "wheel",
+        "windmill",
+        
+        "connected-caveman-small-clique",
+        "connected-caveman-med-clique",
+        "connected-caveman-large-clique",
 
+        "relaxed-caveman",
+
+        "star-like-many-connections",
+        "star-like-med-connections",
+        "star-like-few-connections",
+        "probabilistic-star-like-many-connections",
+
+        "random-k-regular-large-k",
+        "random-k-regular-med-k",
+        "random-k-regular-small-k",
+        
+        "ring-k-regular-small-odd-k",
+        "ring-k-regular-med-odd-k",
+        "ring-k-regular-large-odd-k",
+        "ring-k-regular-small-even-k",
+        "ring-k-regular-med-even-k",
+        "ring-k-regular-large-even-k"
     ]
+
 )
 
 '''
