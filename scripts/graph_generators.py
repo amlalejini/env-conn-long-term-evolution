@@ -630,7 +630,7 @@ def gen_graph_ring_k_regular(nodes:int, k:int, return_nxGraph:bool = True):
             
             #add edges to grpah
             for endpoint2 in endpoints:
-                if (endpoint1,endpoint2) not in list_edges:
+                if (endpoint1,endpoint2) not in list_edges: #Pretty sure this line causes disgustingly long run-time for large k/num_edges
                         list_edges.append((endpoint1, endpoint2))   
     if return_nxGraph:
         graph = nx.Graph()
@@ -638,12 +638,6 @@ def gen_graph_ring_k_regular(nodes:int, k:int, return_nxGraph:bool = True):
         graph.add_edges_from(list_edges)     
     else: 
         graph = {"nodes": list_nodes, "edges": list_edges}
-    nx.draw(
-        graph,
-        pos = nx.spring_layout(graph, iterations=10000),
-        with_labels = True,
-    )
-    plt.show()
     return graph
 
 # def gen_graph_hierarchical_k_regular(layers:int, k:int, layer_size:int, connection_path_size:int):

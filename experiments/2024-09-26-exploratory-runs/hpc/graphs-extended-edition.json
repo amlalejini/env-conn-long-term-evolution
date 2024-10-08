@@ -1,0 +1,193 @@
+{
+    "graphs-to-generate": [
+      {
+        "graph": "toroidal-lattice",
+        "params": {"graph_width":60, "graph_height":60}
+      },
+      {
+        "graph": "comet-kite",
+        
+        "params": {"core_size":1800, "num_tails":50, "additional_tail_nodes": 1750},
+        "base_seed":1000,
+        "output_id": "comet-kite-large-core-50tial",
+        "count":50
+      },
+      {
+        "graph": "comet-kite",
+        
+        "params": {"core_size":600, "num_tails":50, "additional_tail_nodes": 2950},
+        "base_seed":1000,
+        "output_id": "comet-kite-med-core-50tail",
+        "count": 50
+      },
+      {
+        "graph": "comet-kite",
+        
+        "params": {"core_size":100, "num_tails":50, "additional_tail_nodes": 3450},
+        "base_seed":1000,
+        "output_id": "comet-kite-small-core-50tail",
+        "count":50
+
+      },
+      {
+        "graph": "random-erdos-renyi",
+        "params": {"nodes":3600, "edge_prob":0.5},
+        "base_seed":1000,
+        "output_id": "random-erdos-renyi-0.5",
+        "count":50
+
+      },
+      {
+        "graph": "random-erdos-renyi",
+        "params": {"nodes":3600, "edge_prob":0.7},
+        "base_seed":1000,
+        "output_id": "random-erdos-renyi-0.7",
+        "count":50
+
+      },
+      {
+        "graph": "random-erdos-renyi",
+        "params": {"nodes":3600, "edge_prob":0.3},
+        "base_seed":1000,
+        "output_id": "random-erdos-renyi-0.3",
+        "count":50
+
+      },
+      {
+        "graph": "cycle",
+        "params": {"nodes":3600}
+      },
+      {
+        "graph": "wheel",
+        "params": {"nodes":3600}
+      },
+      {
+        "graph": "windmill",
+        "params": { "cliques":60, "clique_size": 59},
+        "increase_size_to":3600
+      },
+      {
+        "graph": "connected-caveman",
+        
+        "params": {"num_cliques":359, "clique_size":10},
+        "increase_size_to": 3600,
+        "output_id": "connected-caveman-small-clique"
+
+      },
+      {
+        "graph": "connected-caveman",
+        "params": {"num_cliques":59, "clique_size":59},
+        "increase_size_to": 3600,
+        "output_id": "connected-caveman-med-clique"
+
+      },
+      {
+        "graph": "connected-caveman", 
+        "params": {"num_cliques":10, "clique_size":359},
+        "increase_size_to": 3600,
+        "output_id": "connected-caveman-large-clique"
+
+      },
+      {
+        "graph": "relaxed-caveman",
+        "params": {"num_cliques":59, "clique_size":59, "P_rewiring":0.3},
+        "base_seed":1000,
+        "increase_size_to":3600,
+        "count":50
+      },   
+      {
+        "graph": "star-like",
+        "params": {"nodes":3600, "added_connections":3600},
+        "base_seed":1000,
+        "output_id":"star-like-many-connections",
+        "count":50
+
+      },
+      {
+        "graph": "star-like",
+        "params": {"nodes":3600, "added_connections":1200},
+        "base_seed":1000,
+        "output_id":"star-like-med-connections",
+        "count":50
+
+      },{
+        "graph": "star-like",
+        "params": {"nodes":3600, "added_connections":600},
+        "base_seed":1000,
+        "output_id":"star-like-few-connections",
+        "count":50
+
+      },
+      {
+        "graph": "probabilistic-star-like",
+        "params": {"nodes":3600, "P_connections":1},
+        "base_seed":1000,
+        "output_id":"probabilistic-star-like-many-connections",
+        "count":50
+      }, 
+      {
+        "graph": "random-k-regular",
+        "params": {"k":30, "nodes":3600},
+        "base_seed":1000,
+        "output_id":"random-k-regular-large-k",
+        "count": 50
+      },
+      {
+        "graph": "random-k-regular",
+        "params": {"k":10, "nodes":3600},
+        "base_seed":1000,
+        "output_id":"random-k-regular-med-k",
+        "count": 50
+      },
+      {
+        "graph": "random-k-regular",
+        "params": {"k":5, "nodes":3600},
+        "base_seed":1000,
+        "output_id":"random-k-regular-small-k",
+        "count": 50
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": {"nodes":3600, "k":5},
+        "base_seed":1000,
+        "output_id":"ring-k-regular-small-odd-k",
+        "count": 50
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": {"nodes":3600, "k":11},
+        "base_seed":1000,
+        "output_id":"ring-k-regular-med-odd-k",
+        "count": 50
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": {"nodes":3600, "k":31},
+        "base_seed":1000,
+        "output_id":"ring-k-regular-large-odd-k",
+        "count": 50
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": {"nodes":3600, "k":4},
+        "base_seed":1000,
+        "output_id":"ring-k-regular-small-even-k",
+        "count": 50
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": {"nodes":3600, "k":10},
+        "base_seed":1000,
+        "output_id":"ring-k-regular-med-even-k",
+        "count": 50
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": {"nodes":3600, "k":30},
+        "base_seed":1000,
+        "output_id":"ring-k-regular-large-even-k",
+        "count": 50
+      }
+      
+    ]
+  }
