@@ -1,0 +1,8 @@
+{
+  "graphs-to-generate": [
+    {
+      "graph": "linear-chain",
+      "params": {"nodes": 3600}
+    }
+  ]
+}
