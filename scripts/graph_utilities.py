@@ -99,3 +99,23 @@ def write_undirected_graph_to_matrix(fname:str, graph:nx.Graph):
     # Write file content to file
     with open(fname, "w") as fp:
         fp.write(file_content)
+
+def calc_expected_births(graph:nx.Graph, self_replace=True):
+    expected_births = {node:{"expected_births":0, "prop_births":0} for node in graph.nodes}
+    for node in graph.nodes:
+        for neighbor in graph.neighbors(node):
+            expected_births[node]["expected_births"] += (1 / graph.degree[neighbor])
+        if self_replace:
+            expected_births[node]["expected_births"] += (1 / graph.degree[node])
+
+    total = sum(expected_births[node]["expected_births"] for node in expected_births)
+    for node in expected_births:
+        expected_births[node]["prop_births"] = expected_births[node]["expected_births"] / total
+
+    return expected_births
+
+
+# import graph_generators as ggen
+# g = ggen.gen_graph_linear_chain(100)
+# e = calc_expected_births(g)
+# print(e)
