@@ -60,7 +60,8 @@ defaults = {
         "nodes": 100
     },
     "windmill": {
-        "nodes": 100
+        "cliques": 10,
+        "clique_size":10
     },
     "clique-ring": {
         "clique_size": 8,
