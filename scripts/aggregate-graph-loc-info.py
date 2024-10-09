@@ -64,6 +64,10 @@ def main():
         # Extract run parameters
         ########################################
         run_cfg_path = os.path.join(run_path, "data", "run_params.csv")
+        if not os.path.isfile(run_cfg_path):
+            print("Run did not finish, skipping")
+            continue
+
         run_cfg_data = utils.read_csv(run_cfg_path)
         run_params = {}
         output_param_info = {}
