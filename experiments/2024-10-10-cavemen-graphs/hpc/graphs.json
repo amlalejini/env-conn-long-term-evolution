@@ -1,0 +1,33 @@
+{
+    "graphs-to-generate": [
+      {
+        "graph": "connected-caveman",
+
+        "params": {"num_cliques":359, "clique_size":10},
+        "increase_size_to": 3600,
+        "output_id": "connected-caveman-small-clique"
+
+      },
+      {
+        "graph": "connected-caveman",
+        "params": {"num_cliques":59, "clique_size":59},
+        "increase_size_to": 3600,
+        "output_id": "connected-caveman-med-clique"
+
+      },
+      {
+        "graph": "connected-caveman", 
+        "params": {"num_cliques":10, "clique_size":359},
+        "increase_size_to": 3600,
+        "output_id": "connected-caveman-large-clique"
+
+      },
+      {
+        "graph": "relaxed-caveman",
+        "params": {"num_cliques":59, "clique_size":59, "P_rewiring":0.3},
+        "base_seed":1000,
+        "increase_size_to":3600,
+        "count":50
+      }
+    ]
+  }   
