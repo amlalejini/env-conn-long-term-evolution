@@ -12,7 +12,7 @@ import pathlib
 # Add scripts directory to path, import utilities from scripts directory.
 sys.path.append(
     os.path.join(
-        pathlib.Path(os.path.dirname(os.path.abspath(__file__))).parents[2],
+        pathlib.Path(os.path.dirname(os.path.abspath(__file__))).parents[4],
         "scripts"
     )
 )
