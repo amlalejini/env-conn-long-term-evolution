@@ -207,6 +207,19 @@ def main():
 
         graph_expected_births_info[graph_file] = gutils.calc_expected_births(graph)
 
+        node_properties = {
+            "percolation_centrality": nx.percolation_centrality(graph),
+            "harmonic_centrality": nx.harmonic_centrality(graph),
+            "subgraph_centrality": nx.subgraph_centrality(graph),
+            "eigenvector_centrality": nx.eigenvector_centrality(graph),
+            "load_centrality": nx.load_centrality(graph),
+            "second_order_centrality": nx.second_order_centrality(graph),
+            "triangles": nx.triangles(graph),
+            "closeness_centrality": nx.closeness_centrality(graph),
+            "information_centrality": nx.information_centrality(graph),
+            "clustering": nx.clustering(graph)
+        }
+
         # Add attributes to graph nodes
         for loc in graph.nodes():
             expected_births = graph_expected_births_info[graph_file][loc]["prop_births"]
@@ -215,11 +228,19 @@ def main():
             all_vs_expected = all_task_prop - expected_births
             all_vs_actual = all_task_prop - actual_births_prop
             graph.nodes[loc]["expected_births_prop"] = expected_births
+            graph.nodes[loc]["actual_births_prop"] = actual_births_prop
             graph.nodes[loc]["all_task_prop"] = all_task_prop
-            graph.nodes[loc]["all_vs_expected"] = all_vs_expected
-            graph.nodes[loc]["all_vs_actual"] = all_vs_actual
+            graph.nodes[loc]["all_task_prop_vs_expected_births"] = all_vs_expected
+            graph.nodes[loc]["all_task_prop_vs_actual_births"] = all_vs_actual
+            graph.nodes[loc]["actual_births_mean"] = actual_birth_locs[graph_file][loc]["mean"]
+            graph.nodes[loc]["actual_births_variance"] = actual_birth_locs[graph_file][loc]["variance"]
+            graph.nodes[loc]["actual_births_stddev"] = stats.stdev(actual_birth_locs[graph_file][loc]["counts"])
+            graph.nodes[loc]["degree"] = graph.degree[loc]
+            for property in node_properties:
+                graph.nodes[loc][property] = node_properties[property][loc]
 
         # TODO: add more node properties to each node
+        # print(nx.degree_centrality(graph))
 
         # Write out node info for graph
         graph_base_name = ".".join(graph_file.split(".")[:-1])
