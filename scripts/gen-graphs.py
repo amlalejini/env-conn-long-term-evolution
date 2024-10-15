@@ -76,6 +76,10 @@ defaults = {
         "nodes_between_communities": 2,
         "seed": None
     },
+    "barbell": {
+        "clique_size": 10,
+        "chain_size": 10
+    },
     "random-k-regular":{
         "k":10,
         "nodes": 100,
@@ -105,7 +109,7 @@ defaults = {
         "nodes": 100,
         "k": 10
     }
-    
+
 }
 
 output_modes = {

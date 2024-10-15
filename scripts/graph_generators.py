@@ -12,44 +12,6 @@ import networkx as nx
 #import matplotlib.pyplot as plt
 from typing import Optional
 
-# def main():
-    #gen_graph_random_k_regular(4,8,1000)
-    #gen_graph_connected_caveman(4,4)
-    #gen_graph_connected_caveman(10,5)
-    # gen_graph_relaxed_caveman(4,4,0.5,1000)
-    # gen_graph_relaxed_caveman(4,4,0.1,1000)
-    # gen_graph_relaxed_caveman(4,4,1.0,1000)
-    # gen_graph_relaxed_caveman(4,4,0.5,1000)
-    #gen_graph_star_like(10,3,1000)
-    #gen_graph_star_like(5,1,1000)
-    #gen_graph_star_like(20,0,1000)
-    # gen_graph_probabilistic_star_like(10,0.1,1000)
-    # gen_graph_probabilistic_star_like(10,0.1,1001)
-    # gen_graph_probabilistic_star_like(10,0.1,1002)
-    # gen_graph_probabilistic_star_like(10,0.1,1003)
-    # gen_graph_ring_k_regular(8,4)
-    # gen_graph_ring_k_regular(20,4)
-    # gen_graph_ring_k_regular(10,2)        
-    # gen_graph_ring_k_regular(30,4)
-    #gen_graph_ring_k_regular(20,8)
-
-    # gen_graph_ring_k_regular(30,3)
-    # #gen_graph_ring_k_regular(10,3)
-    # #gen_graph_ring_k_regular(8,3)
-    # gen_graph_ring_k_regular(50,7)
-    #gen_graph_ring_k_regular(100,3)
-
-    # gen_graph_ring_k_regular(100,5)
-    # gen_graph_ring_k_regular(100,7)
-    # gen_graph_ring_k_regular(100,7)
-    # gen_graph_ring_k_regular(100,9)
-    # gen_graph_ring_k_regular(100,15)
-    # gen_graph_ring_k_regular(100,17)
-    # gen_graph_ring_k_regular(100,10)
-    #gen_graph_hierarchical_k_regular(1, 2, 3, 1)
-
-
-
 def gen_graph_well_mixed(nodes:int):
     """
     Function generates a well-mixed graph where all nodes are connected by edges.
@@ -264,6 +226,19 @@ def gen_graph_random_geometric(nodes:int, radius:float, dimension:int, seed:int)
     )
     return graph
 
+def gen_graph_barbell(
+      clique_size:int,
+      chain_size:int
+):
+    '''
+    Function generates a barbell graph (https://networkx.org/documentation/stable/reference/generated/networkx.generators.classic.barbell_graph.html)
+    A barbell graph is a linear chain with two cliques on either end of the chain.
+    Attributes:
+        clique_size(int)
+        chain_size(int)
+    '''
+    return nx.barbell_graph(m1 = clique_size, m2 = chain_size)
+
 def gen_graph_clique_ring(
         clique_size:int,
         clique_count:int,
@@ -465,7 +440,7 @@ def gen_graph_ring_k_regular(k:int, nodes:int,):
     Returns:
         A ring-like k-regular Graph on n nodes.
     """
-    
+
     graph = nx.graph()
 
     return graph
@@ -480,7 +455,7 @@ def gen_graph_connected_caveman(num_cliques:int, clique_size:int):
         A set of cliques connected via reataching one edge to a neighboring clique along a central cylce such that n cliques form a single unbroken loop (Watts 1999)
     """
     graph = nx.connected_caveman_graph(num_cliques, clique_size)
-    return graph 
+    return graph
 
 # TODO See if guranteed connected/enforce connected
 
@@ -509,7 +484,7 @@ def gen_graph_star_like(nodes:int, added_connections:int, seed:int):
         nodes(int): Number of desired nodes in graph
         added_connections(int) the number of edges added randomly between pre-existing nodes
         seed(int): Positive integer that intializes a random number generator
-        
+
     Returns:
        a star graph graph with randomly added edges(set number or random probability for all vertices tbd)
     """
@@ -523,14 +498,14 @@ def gen_graph_star_like(nodes:int, added_connections:int, seed:int):
     list_nodes = []
     list_nodes.append(center_node)
     list_edges = []
-   
+
     #instantiate nodes
     for node in range(1, nodes):
         list_nodes.append(node)
         #For all nodes n, add edge between n and center node
         list_edges.append((0,node))
-    graph.add_nodes_from(list_nodes) 
-   
+    graph.add_nodes_from(list_nodes)
+
 
     #ensure the number of added connections is correct
     while(len(list_edges) < (nodes -1 + added_connections)):
@@ -541,7 +516,7 @@ def gen_graph_star_like(nodes:int, added_connections:int, seed:int):
             node1 = random.choice(list_nodes)
             while(node1 == 0):
                 node1 = random.choice(list_nodes)
-            #find unique(not center or node1) node2 
+            #find unique(not center or node1) node2
             node2 = random.choice(list_nodes)
             while(node2 == 0 or node2 == node1):
                 node2 = random.choice(list_nodes)
@@ -566,7 +541,7 @@ def gen_graph_probabilistic_star_like(nodes:int, P_connection:float, seed:int):
        a star graph graph with randomly added edges(random probability for all vertices)
     """
     graph=nx.Graph()
-    
+
     center_node = 0
     list_nodes = []
     list_nodes.append(center_node)
@@ -577,8 +552,8 @@ def gen_graph_probabilistic_star_like(nodes:int, P_connection:float, seed:int):
         list_nodes.append(node)
         #For all nodes n, add edge between n and center node
         list_edges.append((0,node))
-    graph.add_nodes_from(list_nodes) 
-    
+    graph.add_nodes_from(list_nodes)
+
     #for every node randomly add edge
     for n in range(1,nodes):
         #randomly select second node
@@ -586,7 +561,7 @@ def gen_graph_probabilistic_star_like(nodes:int, P_connection:float, seed:int):
         #if edge already exist, append or loop, reassign n2
         while((n,n2) in list_edges or n == n2):
             n2 = random.choice(list_nodes)
- 
+
         if random.random() <= P_connection:
             list_edges.append((n,n2))
     #convert to nxgraph
@@ -611,7 +586,7 @@ def gen_graph_ring_k_regular(nodes:int, k:int, return_nxGraph:bool = True):
                 #add k nearest neighbors to list of other endpoints, think of nodes in a circle
                 endpoints.append(list_nodes[(node +i) % len(list_nodes)])
                 endpoints.append(list_nodes[(node -i) % len(list_nodes)])
-                
+
                 for endpoint2 in endpoints:
                     if (endpoint1,endpoint2) not in list_edges:
                         list_edges.append((endpoint1, endpoint2))
@@ -625,18 +600,18 @@ def gen_graph_ring_k_regular(nodes:int, k:int, return_nxGraph:bool = True):
                 #add k nearest neighbors to list of other endpoints, think of nodes in a circle
                 endpoints.append(list_nodes[(node +i) % len(list_nodes)])
                 endpoints.append(list_nodes[(node -i) % len(list_nodes)])
-                #add node opposite node 
+                #add node opposite node
                 endpoints.append(list_nodes[( (node + (int(len(list_nodes)/2)))) % len(list_nodes)])
-            
+
             #add edges to grpah
             for endpoint2 in endpoints:
                 if (endpoint1,endpoint2) not in list_edges: #Pretty sure this line causes disgustingly long run-time for large k/num_edges
-                        list_edges.append((endpoint1, endpoint2))   
+                        list_edges.append((endpoint1, endpoint2))
     if return_nxGraph:
         graph = nx.Graph()
         graph.add_nodes_from(list_nodes)
-        graph.add_edges_from(list_edges)     
-    else: 
+        graph.add_edges_from(list_edges)
+    else:
         graph = {"nodes": list_nodes, "edges": list_edges}
     return graph
 
@@ -648,7 +623,7 @@ def gen_graph_ring_k_regular(nodes:int, k:int, return_nxGraph:bool = True):
 #         #generate k-regular
 #         # repalce each node with one smaller layer k-reg
 #         #
-        
+
 #         #toplayer = k-regular graph
 #         toplayer = gen_graph_ring_k_regular(layer_size,k,False)
 #         #every node becomes lower layer k-regular
@@ -672,7 +647,7 @@ def gen_graph_ring_k_regular(nodes:int, k:int, return_nxGraph:bool = True):
 #                     toplayer["nodes"].append(toplayer["nodes"][-1][-1] + i)
 #                     toplayer["edges"].append((endpoint1,toplayer["nodes"][-1][-1]))
 #                 toplayer["edges"].append((toplayer["nodes"][-1][-1],endpoint2))
-                
+
 
 #     # graph.add_nodes_from(toplayer["nodes"])
 #     # graph.add_edges_from(toplayer["edges"])
@@ -729,6 +704,7 @@ _graph_generators = {
     "windmill": gen_graph_windmill,
     "clique-ring": gen_graph_clique_ring,
     "hierarchical-clique-ring": gen_graph_hierarchical_clique_ring,
+    "barbell": gen_graph_barbell,
     #Newly added by Grant
     "random-k-regular": gen_graph_random_k_regular,
     "connected-caveman": gen_graph_connected_caveman,
@@ -740,7 +716,7 @@ _graph_generators = {
     "ring-k-regular": gen_graph_ring_k_regular
 
 }
- 
+
 def get_generator_fun(name:str):
     return _graph_generators[name]
 
