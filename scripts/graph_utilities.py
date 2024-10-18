@@ -100,6 +100,26 @@ def write_undirected_graph_to_matrix(fname:str, graph:nx.Graph):
     with open(fname, "w") as fp:
         fp.write(file_content)
 
+def write_node_info(output_path:str, graph:nx.Graph):
+    # Collect node fields
+    all_node_fields = set()
+    for node_id in graph.nodes():
+        all_node_fields.update(set(graph.nodes[node_id].keys()))
+    all_node_fields = list(all_node_fields)
+    all_node_fields.sort()
+
+    lines = []        # Will be a list of csv rows to write to file
+    for node_id in graph.nodes():
+        node_info = {
+            field: graph.nodes[node_id][field] if field in graph.nodes[node_id] else None
+            for field in all_node_fields
+        }
+        node_info["loc_id"] = node_id
+        lines.append(node_info)
+    # Write info out as csv
+    utils.write_csv(output_path, lines)
+
+
 def calc_expected_births(graph:nx.Graph, self_replace=True):
     expected_births = {node:{"expected_births":0, "prop_births":0} for node in graph.nodes}
     for node in graph.nodes:
@@ -117,5 +137,9 @@ def calc_expected_births(graph:nx.Graph, self_replace=True):
 
 # import graph_generators as ggen
 # g = ggen.gen_graph_linear_chain(100)
+# for node_id in g.nodes():
+#     g.nodes[node_id]["a"] = "hello"
+#     g.nodes[node_id]["b"] = 109
+# write_node_info("test.csv", g)
 # e = calc_expected_births(g)
 # print(e)

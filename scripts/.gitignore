@@ -1,4 +1,6 @@
 local-avida/
 test-graphs/
+test-data/
 *.dat
 dump/
+log.txt

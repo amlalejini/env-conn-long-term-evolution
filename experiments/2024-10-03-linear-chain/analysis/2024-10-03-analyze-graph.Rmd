@@ -1,0 +1,385 @@
+# 2024-10-03 - Analyze Linear Chain Properties
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+library(kableExtra)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+experiment_slug <- "2024-10-03-linear-chain"
+working_directory <- paste(
+  "experiments",
+  experiment_slug,
+  "analysis",
+  sep = "/"
+)
+# Adjust working directory if being knitted for bookdown build.
+if (exists("bookdown")) {
+  if (bookdown) {
+    working_directory <- paste0(
+      bookdown_wd_prefix,
+      working_directory
+    )
+  }
+}
+```
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_dir <- paste(
+  working_directory,
+  "plots",
+  sep = "/"
+)
+
+dir.create(
+  plot_dir,
+  showWarnings = FALSE
+)
+```
+
+Load graph birth data
+
+```{r}
+graph_birth_data_path <- paste(
+  working_directory,
+  "data",
+  "graph_birth_info.csv",
+  sep = "/"
+)
+
+graph_birth_data <- read_csv(graph_birth_data_path)
+```
+
+Load node info data
+
+```{r}
+node_info_data_path <- paste(
+  working_directory,
+  "data",
+  "node_info_linear-chain.csv",
+  sep = "/"
+)
+
+node_info_data <- read_csv(node_info_data_path)
+```
+
+## Frequency of birth counts
+
+```{r}
+graph_birth_plt <- graph_birth_data %>%
+  ggplot(
+    aes(x = births)
+  ) +
+  scale_x_continuous(
+    name = "Location birth count"
+  ) +
+  geom_density(
+    fill="#69b3a2", color="#e9ecef", alpha=0.8
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/graph_births.pdf"),
+  plot = graph_birth_plt,
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+graph_birth_log_plt <- graph_birth_data %>%
+  ggplot(
+    aes(x = births)
+  ) +
+  scale_x_log10(
+    name = "Location birth count (log scale)"
+  ) +
+  geom_density(
+    fill="#69b3a2", color="#e9ecef", alpha=0.8
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/graph_births_log.pdf"),
+  plot = graph_birth_log_plt,
+  width = 15,
+  height = 10
+)
+```
+
+## Proportion of task appearances by id
+
+```{r}
+task_appearances_by_id_plt <- node_info_data %>%
+  ggplot(
+    aes(
+      x = loc_id,
+      y = all_task_prop
+    )
+  ) +
+  geom_bar(stat = "identity")
+
+ggsave(
+  filename = paste0(plot_dir, "/task_app_by_id.pdf"),
+  plot = task_appearances_by_id_plt,
+  width = 20,
+  height = 10
+)
+```
+
+## Proportion of actual births by id
+
+```{r}
+act_births_by_id_plt <- node_info_data %>%
+  ggplot(
+    aes(
+      x = loc_id,
+      y = actual_births_prop
+    )
+  ) +
+  geom_bar(stat = "identity")
+
+ggsave(
+  filename = paste0(plot_dir, "/act_births_by_id.pdf"),
+  plot = act_births_by_id_plt,
+  width = 20,
+  height = 10
+)
+```
+
+## Proportion of expected births by id
+
+```{r}
+expected_births_by_id_plt <- node_info_data %>%
+  ggplot(
+    aes(
+      x = loc_id,
+      y = expected_births_prop
+    )
+  ) +
+  geom_bar(stat = "identity")
+
+ggsave(
+  filename = paste0(plot_dir, "/expected_births_by_id.pdf"),
+  plot = expected_births_by_id_plt,
+  width = 20,
+  height = 10
+)
+```
+
+## Task appearances frequency distribution
+
+```{r}
+longer_props <- node_info_data %>% pivot_longer(
+  cols = c(all_task_prop, expected_births_prop, actual_births_prop),
+  names_to = "proportion_type",
+  values_to = "proportion"
+)
+
+task_appearances_freq_dist_plt <- longer_props %>%
+  ggplot(
+    aes(
+      x = proportion,
+      group = proportion_type,
+      fill = proportion_type
+    )
+  ) +
+  geom_density(alpha=0.4)
+
+ggsave(
+  filename = paste0(plot_dir, "/all_task_prop_freq_dist_plt.pdf"),
+  plot = task_appearances_freq_dist_plt,
+  width = 20,
+  height = 10
+)
+```
+
+```{r}
+longer_props <- node_info_data %>% pivot_longer(
+  cols = c(all_task_prop, expected_births_prop, actual_births_prop),
+  names_to = "proportion_type",
+  values_to = "proportion"
+)
+
+task_appearances_freq_dist_plt <- longer_props %>%
+  filter(proportion_type != "expected_births_prop") %>%
+  ggplot(
+    aes(
+      x = proportion,
+      group = proportion_type,
+      fill = proportion_type
+    )
+  ) +
+  geom_density(alpha=0.4)
+
+ggsave(
+  filename = paste0(plot_dir, "/all_task_prop_freq_dist_plt2.pdf"),
+  plot = task_appearances_freq_dist_plt,
+  width = 20,
+  height = 10
+)
+```
+
+## All task prop vs expected
+
+```{r}
+all_task_prop_vs_expected_births_plt <- node_info_data %>%
+  ggplot(
+    aes(
+      x = all_task_prop_vs_expected_births
+    )
+  ) +
+  geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8) +
+  geom_vline(xintercept = 0, color = "black")
+
+ggsave(
+  filename = paste0(plot_dir, "/all_task_prop_vs_expected_births_plt.pdf"),
+  plot = all_task_prop_vs_expected_births_plt,
+  width = 20,
+  height = 10
+)
+```
+
+## All task prop vs actual
+
+```{r}
+all_task_prop_vs_actual_births_plt <- node_info_data %>%
+  ggplot(
+    aes(
+      x = all_task_prop_vs_actual_births
+    )
+  ) +
+  geom_density(fill="#69b3a2", color="#e9ecef", alpha=0.8) +
+  geom_vline(xintercept = 0, color = "black")
+
+ggsave(
+  filename = paste0(plot_dir, "/all_task_prop_vs_actual_births_plt.pdf"),
+  plot = all_task_prop_vs_actual_births_plt,
+  width = 20,
+  height = 10
+)
+```
+
+## All task prop vs ?? (correlation)
+
+```{r}
+all_task_prop_vs_actual_births_cor_plt <- node_info_data %>%
+  ggplot(
+    aes(
+      x = actual_births_prop,
+      y = all_task_prop
+    )
+  ) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x)
+
+
+ggsave(
+  filename = paste0(plot_dir, "/all_task_prop_vs_actual_births_cor.pdf"),
+  plot = all_task_prop_vs_actual_births_cor_plt,
+  width = 20,
+  height = 10
+)
+```
+
+```{r}
+all_task_prop_vs_expected_births_cor_plt <- node_info_data %>%
+  ggplot(
+    aes(
+      x = expected_births_prop,
+      y = all_task_prop
+    )
+  ) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x)
+
+
+ggsave(
+  filename = paste0(plot_dir, "/all_task_prop_vs_expected_births_cor_plt.pdf"),
+  plot = all_task_prop_vs_expected_births_cor_plt,
+  width = 20,
+  height = 10
+)
+```
+
+```{r}
+property_data_long <- node_info_data %>%
+  pivot_longer(
+    cols = c(
+      percolation_centrality,
+      harmonic_centrality,
+      subgraph_centrality,
+      eigenvector_centrality,
+      load_centrality,
+      second_order_centrality,
+      triangles,
+      closeness_centrality,
+      information_centrality,
+      clustering,
+      degree,
+      actual_births_prop,
+      expected_births_prop
+    ),
+    names_to = "node_property",
+    values_to = "node_property_value"
+  )
+
+plt <- property_data_long %>%
+  ggplot(
+    aes(
+      x = node_property_value,
+      y = all_task_prop
+    )
+  ) +
+  geom_point() +
+  geom_smooth(method = "lm", formula = y~x) +
+  facet_wrap(~node_property, scales = "free")
+
+ggsave(
+  filename = paste0(plot_dir, "/node_properties_cor.pdf"),
+  plot = plt,
+  width = 20,
+  height = 20
+)
+```
+
+## Outliers in task appearance proportion
+
+```{r}
+iqr <- IQR(node_info_data$all_task_prop)
+upper_bound <- quantile(node_info_data$all_task_prop, probs=c( .75), na.rm = FALSE)+1.5*iqr
+lower_bound <- quantile(node_info_data$all_task_prop, probs=c( .75), na.rm = FALSE)-1.5*iqr
+
+greater_outliers <- node_info_data %>%
+  filter(all_task_prop >= upper_bound) %>%
+  arrange(
+    # desc(abs(all_task_prop)),
+    loc_id
+  ) %>%
+  select(
+    all_task_prop, loc_id
+  )
+print(greater_outliers, n = 100)
+
+lower_outliers <- node_info_data %>%
+  filter(all_task_prop <= lower_bound) %>%
+  arrange(
+    # desc(abs(all_task_prop)),
+    loc_id
+  ) %>%
+  select(
+    all_task_prop, loc_id
+  )
+print(lower_outliers, n = 350)
+
+mean(node_info_data$all_task_prop)
+```
+
+
