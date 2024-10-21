@@ -1,3 +1,5 @@
+# 2024-09-11 Analysis Code
+
 
 ```{r}
 library(tidyverse)
@@ -34,6 +36,7 @@ theme_set(theme_cowplot())
 plot_dir <- paste(
   working_directory,
   "plots",
+  "10k",
   sep = "/"
 )
 
@@ -49,6 +52,7 @@ dir.create(
 data_path <- paste(
   working_directory,
   "data",
+  "10k",
   "summary.csv",
   sep = "/"
 )
@@ -58,7 +62,22 @@ data <- data %>%
   mutate(
     graph_type = as.factor(graph_type)
   )
+```
 
+```{r}
+time_series_path <- paste(
+  working_directory,
+  "data",
+  "time_series.csv",
+  sep = "/"
+)
+time_series_data <- read_csv(time_series_path)
+
+time_series_data <- time_series_data %>%
+  mutate(
+    graph_type = as.factor(graph_type),
+    seed = as.factor(seed)
+  )
 ```
 
 
@@ -67,12 +86,12 @@ data <- data %>%
 # Grab just completed rows
 completed_runs_data <- data %>%
   filter(
-    update == 100000
+    update == 10000
   )
 
 incomplete_runs <- data %>%
   filter(
-    update != 100000
+    update != 10000
   )
 ```
 
@@ -161,8 +180,23 @@ ggsave(
 
 ```{r}
 kruskal.test(
-  formula = dom_task_total ~ graph_type,
+  formula = pop_task_total ~ graph_type,
   data = filter(completed_runs_data, graph_type != "star")
+)
+
+# wc_results <- dplyr::filter(completed_runs_data, graph_type != "star") %>%
+#   rstatix::pairwise_wilcox_test(
+#     formula = pop_task_total ~ graph_type,
+#     exact = FALSE
+# )
+  # adjust_pvalue(method = "holm") %>%
+  # add_significance("p.adj")
+
+pairwise.wilcox.test(
+  x = filter(completed_runs_data, graph_type != "star")$pop_task_total,
+  g = filter(completed_runs_data, graph_type != "star")$graph_type,
+  p.adjust.method	= "holm"
+
 )
 ```
 
@@ -179,6 +213,9 @@ num_equals_data <- completed_runs_data %>%
     num_pop_equals = sum(pop_task_equals),
     no_pop_equals = n() - sum(pop_task_equals)
   )
+
+num_equals_table <- kbl(num_equals_data) %>% kable_styling()
+save_kable(num_equals_table, paste0(plot_dir, "/num_equals_table.pdf"))
 
 fisher_results <- num_equals_data %>%
   filter(graph_type != "star") %>%
@@ -368,7 +405,7 @@ ggsave(
 
 ```{r}
 phylodiv_diversity_plt <- ggplot(
-  data = filter(completed_runs_data, graph_type != "star"),
+  data = completed_runs_data,
   mapping = aes(
     x = graph_type,
     y = phylodiv_diversity,
@@ -401,6 +438,188 @@ phylodiv_diversity_plt <- ggplot(
 ggsave(
   filename = paste0(plot_dir, "/genotypic_diversity.pdf"),
   plot = phylodiv_diversity_plt,
+  width = 15,
+  height = 10
+)
+```
+
+## Population task count over time
+
+```{r}
+pop_task_cnt_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = pop_task_total_tasks_done,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = pop_task_cnt_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/pop_tasks_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## Proportion of equals over time
+
+```{r}
+equals_cnt_ts <- time_series_data %>%
+  mutate(
+    update_grp = as.factor(update)
+  ) %>%
+  group_by(
+    update_grp,
+    graph_type
+  ) %>%
+  summarize(
+    n_equals = sum(pop_task_equals_done),
+    prop_equals = sum(pop_task_equals_done) / n(),
+    n = n(),
+    update = first(update)
+  ) %>%
+  ungroup()
+```
+
+```{r}
+equals_cnt_ts_plt <- ggplot(
+    data = equals_cnt_ts,
+    mapping = aes(
+      x = update,
+      y = prop_equals,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  # stat_summary(
+  #   fun.data = "mean_cl_boot",
+  #   fun.args = list(conf.int = 0.95),
+  #   geom = "ribbon",
+  #   alpha = 0.2,
+  #   linetype = 0
+  # ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = equals_cnt_ts_plt,
+  filename = paste0(
+    working_directory,
+    "/plots/equals_cnt_ts_plt.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## Diversity over time
+
+```{r}
+phylodiv_diversity_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_diversity,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylodiv_diversity_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylodiv_diversity_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+phylodiv_current_phylogenetic_diversity_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_current_phylogenetic_diversity,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylodiv_current_phylogenetic_diversity_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylodiv_current_phylogenetic_diversity_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## Average generation over time
+
+
+```{r}
+time_average_generation_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = time_average_generation,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = time_average_generation_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/time_average_generation_ts.pdf"
+  ),
   width = 15,
   height = 10
 )
