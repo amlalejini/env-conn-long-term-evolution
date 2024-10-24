@@ -190,6 +190,7 @@ def main():
     # For each run directory...
     # summary_header = None
     summary_content_lines = []
+    incomplete_runs = []
     for run_dir_i in range(len(run_dirs)):
         run_dir = run_dirs[run_dir_i]
         print(f"...({run_dir_i + 1}/{len(run_dirs)}) aggregating from {run_dir}")
@@ -204,6 +205,7 @@ def main():
         run_cfg_path = os.path.join(run_path, "data", "run_params.csv")
         if not os.path.isfile(run_cfg_path):
             print("Run did not finish, skipping")
+            incomplete_runs.append(run_dir)
             continue
         run_cfg_data = utils.read_csv(run_cfg_path)
         run_params = {}
@@ -488,7 +490,9 @@ def main():
     summary_path = os.path.join(dump_dir, "summary.csv")
     utils.write_csv(summary_path, summary_content_lines)
 
-
+    # print incomplete runs
+    print("Incomplete runs:")
+    print("\n".join(incomplete_runs))
 
 
 
