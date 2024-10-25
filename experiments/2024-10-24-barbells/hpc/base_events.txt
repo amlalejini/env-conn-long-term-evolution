@@ -14,7 +14,7 @@
 ##############################################################################
 
 # Seed the population with a single organism
-u begin Inject filename=default-heads.org
+u begin Inject default-heads.org 1
 
 # Print all of the standard data files...
 u 0:<<DATA_PRINT_INTERVAL>>:end PrintDominantData      # Save info about most abundant genotypes

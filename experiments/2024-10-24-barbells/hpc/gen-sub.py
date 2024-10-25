@@ -58,7 +58,8 @@ fixed_params_direct = {
     "DIVIDE_DEL_PROB": "0.05",
     "FILTER_TIME": "10000",
     "OEE_RES": "1000",
-    "TRACK_INDIVIDUALS": "0"
+    "TRACK_INDIVIDUALS": "0",
+    "BIRTH_METHOD": "2"
 }
 
 
