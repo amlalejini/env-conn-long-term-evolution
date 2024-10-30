@@ -200,7 +200,11 @@ def main():
         # Extract run parameters
         ########################################
         run_cfg_path = os.path.join(run_path, "data", "run_params.csv")
-        run_cfg_data = utils.read_csv(run_cfg_path)
+        try:
+            run_cfg_data = utils.read_csv(run_cfg_path)
+        except:
+            print(f"\n EXCEPTION TROWN: Could not find : {run_cfg_path} \n Skipping this run and continueing to aggregate runs. \n WARNING: aggregate data does not contain complete set of runs")
+            continue
         run_params = {}
         for line in run_cfg_data:
             param = line["param"]
