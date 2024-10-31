@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 REPLICATES=50
-EXP_SLUG=2024-10-24-barbells
+EXP_SLUG=2024-10-31-barbells
 ACCOUNT=devolab
 SEED_OFFSET=6000
 JOB_TIME=96:00:00
