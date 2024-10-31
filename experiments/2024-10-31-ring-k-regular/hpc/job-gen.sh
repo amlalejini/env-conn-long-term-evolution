@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 
 REPLICATES=50
-EXP_SLUG=2024-10-24-exploratory-runs-logic77
-SEED_OFFSET=1000
-JOB_TIME=32:00:00
+EXP_SLUG=2024-10-31-ring-k-regular
+SEED_OFFSET=5000
+JOB_TIME=96:00:00
 JOB_MEM=8G
 PROJECT_NAME=env-conn-long-term-evolution
 RUNS_PER_SUBDIR=950
