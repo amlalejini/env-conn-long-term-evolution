@@ -1,0 +1,37 @@
+{
+    "graphs-to-generate": [
+      {
+        "graph": "cycle",
+        "params": {"nodes":3600}
+      },
+      {
+        "graph": "wheel",
+        "params": {"nodes":3600}
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": { "nodes":3600, "k": 6},
+        "output_id": "even-k6"
+
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": { "nodes":3600, "k": 20},
+        "output_id": "even-k20"
+
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": { "nodes":3600, "k": 7},
+        "output_id": "odd-k7"
+
+      },
+      {
+        "graph": "ring-k-regular",
+        "params": { "nodes":3600, "k": 21},
+        "output_id": "odd-k21"
+
+      }
+      
+    ]
+  }

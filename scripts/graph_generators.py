@@ -430,20 +430,6 @@ def gen_graph_random_k_regular(k:int, nodes:int, seed:int):
     graph = nx.random_regular_graph(k, nodes, seed)
     return graph
 
-#TODO implement
-def gen_graph_ring_k_regular(k:int, nodes:int,):
-    """
-    Function algorithmically generates a k-regular graph.
-    Attributes:
-        k(int): number of degrees of every node
-        nodes(int): number of nodes in the graph
-    Returns:
-        A ring-like k-regular Graph on n nodes.
-    """
-
-    graph = nx.graph()
-
-    return graph
 
 def gen_graph_connected_caveman(num_cliques:int, clique_size:int):
     """
@@ -570,6 +556,14 @@ def gen_graph_probabilistic_star_like(nodes:int, P_connection:float, seed:int):
     return graph
 
 def gen_graph_ring_k_regular(nodes:int, k:int, return_nxGraph:bool = True):
+    """
+    Function algorithmically generates a k-regular graph.
+    Attributes:
+        k(int): number of degrees of every node
+        nodes(int): number of nodes in the graph
+    Returns:
+        A ring-like k-regular Graph on n nodes.
+    """
     if (nodes * k) % 2 != 0:
         raise Exception("impossible to generate k-regular graph given inputs")
     list_nodes = []

@@ -16,13 +16,12 @@ sys.path.append(
     )
 )
 import utilities as utils
-from gen_spatial_network_events import GenSpatialNetworkEventsStr
 
 # Default configuration values
-default_seed_offset = 1000
+default_seed_offset = 5000
 default_account = None
 default_num_replicates = 30
-default_job_time_request = "48:00:00"
+default_job_time_request = "96:00:00"
 default_job_mem_request = "4G"
 default_job_name = "avda"
 
@@ -31,6 +30,7 @@ executable = "avida"
 base_slurm_script_fpath = "./base_slurm_script.txt"
 base_events_fpath = "./base_events.txt"
 base_analyze_fpath = "./base_analyze.txt"
+environment_filename = "environment.cfg"
 
 birth_method_modes = {
     "random-neighborhood": "0",
@@ -43,8 +43,7 @@ combos = CombinationCollector()
 # Special parameters are used to generate the SLURM script but not
 # used directly as Avida configuration settings
 fixed_params_dynamic = {
-    "updates": "100000",
-    # "updates": "1000",
+    "updates": "200000",
     "print_data_resolution": "100"
 }
 
@@ -69,24 +68,19 @@ special_decorators = [
 ]
 
 combos.register_var("spatial_structure__DYNAMIC")
-# 'well-mixed' and 'torroidal-lattice' are handled as special cases
+# 'well-mixed' and 'toroidal-lattice' are handled as special cases
 #  - all others must exist in spatial-structs directory
 combos.add_val(
     "spatial_structure__DYNAMIC",
     [
-   
--        "connected-caveman",
--        "relaxed-caveman"
+        'cycle',
+        "wheel",
+        "even-k6",
+        "even-k20",
+        "odd-k7",
+        "odd-k21"
     ]
-
 )
-
-'''
-
-
-TODO:
-- analyze.cfg
-'''
 
 def main():
     parser = argparse.ArgumentParser(description="Generate SLURM submission scripts.")
@@ -95,7 +89,6 @@ def main():
     parser.add_argument("--spatial_structs_dir", type=str, help="Which directory contains spatial structures to be used?")
     parser.add_argument("--events_dir", type=str, help="Which directory to dump events files in?")
     parser.add_argument("--param_snapshot_dir", type=str, help="Which directory to dump parameter snapshots?")
-    # parser.add_argument("--avida_loc_mapping_dir", type=str, help="Where to dump avida location mapping files?")
     parser.add_argument("--repo_dir", type=str, help="Where is the repository for this experiment?")
     parser.add_argument("--job_dir", type=str, default=None, help="Where to output these job files? If none, put in 'jobs' directory inside of the data_dir")
     parser.add_argument("--replicates", type=int, default=default_num_replicates, help="How many replicates should we run of each condition?")
@@ -182,12 +175,17 @@ def main():
                 exit(-1)
 
     # -- Generate analyze.cfg script --
+    # Get tasks from environment file
+    env_file_path = os.path.join(config_dir, environment_filename)
+    tasks = utils.get_tasks_from_environment_file(env_file_path)
+    detail_tasks_str = " ".join([f"task.{i}" for i in range(len(tasks))])
     # Load in the base slurm file
     base_analyze_script = ""
     with open(base_analyze_fpath, "r") as fp:
         base_analyze_script = fp.read()
     # Update updates to match number of updates for this experiment
     base_analyze_script = base_analyze_script.replace("<<NUM_UPDATES>>", str(fixed_params_dynamic["updates"]))
+    base_analyze_script = base_analyze_script.replace("<<DETAIL_TASKS>>", detail_tasks_str)
     # Output new analyze file
     with open(os.path.join(config_dir, "analyze.cfg"), "w") as fp:
         fp.write(base_analyze_script)
@@ -254,7 +252,7 @@ def main():
 
         cond_struct_files = struct_files[cond_spatial_struct]
         multiple_graphs_for_cond = False
-        if (cond_spatial_struct in {"well-mixed", "torroidal-lattice"}):
+        if (cond_spatial_struct in {"well-mixed", "toroidal-lattice"}):
             cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
         elif len(cond_struct_files) <= 1:
             cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
@@ -269,7 +267,7 @@ def main():
         event_file_name = "unknown"
         rep_events_str = ""
         graph_file_name = ""
-        if (cond_spatial_struct in {"well-mixed", "torroidal-lattice"}):
+        if (cond_spatial_struct in {"well-mixed", "toroidal-lattice"}):
             # Relying on base avida functionality to implement spatial structure
             # No spatial structure configuration events necessary.
             event_file_name = cmd_line_params["EVENT_FILE"]
