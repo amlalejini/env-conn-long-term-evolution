@@ -1,0 +1,48 @@
+#!/bin/bash
+########## Define Resources Needed with SBATCH Lines ##########
+
+#SBATCH --time=<<TIME_REQUEST>>          # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --array=<<ARRAY_ID_RANGE>>
+#SBATCH --mem=<<MEMORY_REQUEST>>        # memory required per node - amount of memory (in bytes)
+#SBATCH --job-name <<JOB_NAME>>         # you can give your job a name for easier identification (same as -J)
+<<ACCOUNT_INFO>>
+
+########## Command Lines to Run ##########
+
+
+JOB_SEED_OFFSET=<<JOB_SEED_OFFSET>>
+RUN_ID=$((SLURM_ARRAY_TASK_ID - 1))
+SEED=$((JOB_SEED_OFFSET + SLURM_ARRAY_TASK_ID - 1))
+
+# Variables for convenience
+EXEC=<<EXEC>>
+CONFIG_DIR=<<CONFIG_DIR>>
+REPO_DIR=<<REPO_DIR>>
+RUN_DIR=<<RUN_DIR>>
+EVENTS_DIR=<<EVENTS_DIR>>
+SPATIAL_STRUCT_DIR=<<SPATIAL_STRUCT_DIR>>
+PARAM_SNAPSHOT_DIR=<<PARAM_SNAPSHOT_DIR>>
+
+# Load correct environment variables, modules, etc.
+module purge
+module load Python/3.11.5
+module load GCCcore/13.2.0
+source ${REPO_DIR}/pyenv/bin/activate
+
+mkdir -p ${RUN_DIR}
+cd ${RUN_DIR}
+cp ${CONFIG_DIR}/${EXEC} .
+<<CONFIG_CP_CMDS>>
+
+<<RUN_CMDS>>
+
+# Move csv files into data directory so they don't get stomped on by analyze mode.
+mv ./*.csv ./data/
+
+<<ANALYSIS_CMDS>>
+
+# Clean up run directory
+rm ${RUN_DIR}/*.cfg
+rm ${RUN_DIR}/*.org
+rm ${RUN_DIR}/${EXEC}
+rm ${RUN_DIR}/*.csv
