@@ -2,3 +2,6 @@
 	path = third-party/avida-empirical
 	url = https://github.com/amlalejini/avida-empirical.git
 	branch = 2024-env-conn
+[submodule "network_correlation"]
+	path = third-party/network_correlation
+	url = https://github.com/rudyarthur/network_correlation.git
