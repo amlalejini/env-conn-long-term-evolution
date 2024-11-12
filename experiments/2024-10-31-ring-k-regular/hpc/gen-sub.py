@@ -34,6 +34,7 @@ environment_filename = "environment.cfg"
 
 birth_method_modes = {
     "random-neighborhood": "0",
+    "replace-oldest-neighborhood": "2",
     "well-mixed": "4"
 }
 
@@ -248,7 +249,7 @@ def main():
         if cond_spatial_struct == "well-mixed":
             cmd_line_params["BIRTH_METHOD"] = birth_method_modes["well-mixed"]
         else:
-            cmd_line_params["BIRTH_METHOD"] = birth_method_modes["random-neighborhood"]
+            cmd_line_params["BIRTH_METHOD"] = birth_method_modes["replace-oldest-neighborhood"]
 
         cond_struct_files = struct_files[cond_spatial_struct]
         multiple_graphs_for_cond = False
