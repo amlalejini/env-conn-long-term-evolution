@@ -108,6 +108,9 @@ defaults = {
     "ring-k-regular":{
         "nodes": 100,
         "k": 10
+    },
+    "circular-ladder-graph":{
+        "nodes": 200
     }
 
 }

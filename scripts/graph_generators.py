@@ -430,6 +430,20 @@ def gen_graph_random_k_regular(k:int, nodes:int, seed:int):
     graph = nx.random_regular_graph(k, nodes, seed)
     return graph
 
+def gen_graph_circular_ladder_graph(nodes:int):
+    """
+    Function generates a circullar ladder graph.
+    Attributes:
+
+        nodes(int): number of nodes in the graph
+    Returns:
+        A circular ladder Graph on n nodes.
+    """
+    if nodes% 2 != 0:
+        raise Exception("impossible to generate circular ladder graph given inputs, nodes must be even")
+    #generates 2 n length cycles. if you want n nodes in your graph, the nx graph must pass n/2
+    graph = nx.circular_ladder_graph(nodes/2)
+    return graph
 
 def gen_graph_connected_caveman(num_cliques:int, clique_size:int):
     """
@@ -707,7 +721,8 @@ _graph_generators = {
     #"regular-island": gen_graph_regular_island,
     "star-like": gen_graph_star_like,
     "probabilistic-star-like": gen_graph_probabilistic_star_like,
-    "ring-k-regular": gen_graph_ring_k_regular
+    "ring-k-regular": gen_graph_ring_k_regular,
+    "circular-ladder-graph": gen_graph_circular_ladder_graph
 
 }
 
