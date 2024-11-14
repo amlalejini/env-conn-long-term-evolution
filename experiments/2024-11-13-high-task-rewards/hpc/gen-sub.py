@@ -74,12 +74,12 @@ combos.register_var("spatial_structure__DYNAMIC")
 combos.add_val(
     "spatial_structure__DYNAMIC",
     [
+        'well-mixed',
         'cycle',
-        "wheel",
-        "even-k6",
-        "even-k20",
-        "odd-k7",
-        "odd-k21"
+        'random-waxman',
+        "connected-caveman",
+        "circular-ladder-graph"
+      
     ]
 )
 

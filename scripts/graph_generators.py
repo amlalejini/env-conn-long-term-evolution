@@ -442,7 +442,7 @@ def gen_graph_circular_ladder_graph(nodes:int):
     if nodes% 2 != 0:
         raise Exception("impossible to generate circular ladder graph given inputs, nodes must be even")
     #generates 2 n length cycles. if you want n nodes in your graph, the nx graph must pass n/2
-    graph = nx.circular_ladder_graph(nodes/2)
+    graph = nx.circular_ladder_graph(int(nodes/2))
     return graph
 
 def gen_graph_connected_caveman(num_cliques:int, clique_size:int):

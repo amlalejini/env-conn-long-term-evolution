@@ -1,0 +1,1 @@
+Runs comparing various graph structures with high rewards for tasks (2x). This same experiment will be run with low rewards for tasks  and compared. currently set to with preference replace oldest neighbor(helps eliminate cryo-chambers), and possibility for birth to replace parent(a variable worth exploring in a future set of runs).

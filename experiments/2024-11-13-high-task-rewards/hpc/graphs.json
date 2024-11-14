@@ -1,0 +1,29 @@
+{
+    "graphs-to-generate": [
+      {
+        "graph":"well-mixed",
+        "params": {"nodes":3600}
+      },
+      {
+        "graph": "cycle",
+        "params": {"nodes":3600}
+      },
+      {
+        "graph": "random-waxman",
+        "params": {"nodes": 3600, "beta": 0.4, "alpha": 0.2},
+        "base_seed": 1000,
+        "output_id": "random-waxman",
+        "count": 50
+      },
+      {
+        "graph": "connected-caveman",
+        "params": {"num_cliques": 60,  "clique_size": 59},
+        "increase_size_to":3600
+      },
+      {
+        "graph": "circular-ladder-graph",
+        "params": {"nodes":3600}
+      }
+      
+    ]
+  }

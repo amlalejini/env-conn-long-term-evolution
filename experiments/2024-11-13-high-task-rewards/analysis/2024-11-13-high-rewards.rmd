@@ -12,7 +12,7 @@ source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/f
 ```
 
 ```{r}
-experiment_slug <- "2024-10-31-ring-k-regular"
+experiment_slug <- "2024-11-13-high-task-rewards"
 working_directory <- paste(
   "experiments",
   experiment_slug,

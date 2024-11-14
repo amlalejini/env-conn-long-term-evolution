@@ -1,24 +1,23 @@
 #!/usr/bin/env bash
 
 REPLICATES=50
-EXP_SLUG=2024-11-11-high-low-rewards
+EXP_SLUG=2024-11-13-high-task-rewards
 SEED_OFFSET=6000
 JOB_TIME=96:00:00
 JOB_MEM=8G
 PROJECT_NAME=env-conn-long-term-evolution
 RUNS_PER_SUBDIR=950
 
-REPO_DIR=/home/grant/research/${PROJECT_NAME}
+REPO_DIR=/mnt/home/gordongr/research/${PROJECT_NAME}
 REPO_SCRIPTS_DIR=${REPO_DIR}/scripts
 HOME_EXP_DIR=${REPO_DIR}/experiments/${EXP_SLUG}
 GRAPHS_DIR=${HOME_EXP_DIR}/hpc/spatial-structs
 GRAPHS_CFG=${HOME_EXP_DIR}/hpc/graphs.json
 EVENTS_DIR=${HOME_EXP_DIR}/hpc/events
 PARAM_SNAPSHOT_DIR=${HOME_EXP_DIR}/hpc/param_snapshots
-AVIDA_LOC_MAPPING_DIR=${HOME_EXP_DIR}/hpc/avida_loc_mappings
 
-DATA_DIR=${HOME_EXP_DIR}/hpc/test/data
-JOB_DIR=${HOME_EXP_DIR}/hpc/test/jobs
+DATA_DIR=/mnt/projects/lalejina_project/data-gordongr/${PROJECT_NAME}/${EXP_SLUG}
+JOB_DIR=${DATA_DIR}/jobs
 CONFIG_DIR=${HOME_EXP_DIR}/hpc/config
 
 # (1) Activate appropriate Python virtual environment
