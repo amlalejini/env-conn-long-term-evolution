@@ -24,10 +24,7 @@ SPATIAL_STRUCT_DIR=<<SPATIAL_STRUCT_DIR>>
 PARAM_SNAPSHOT_DIR=<<PARAM_SNAPSHOT_DIR>>
 
 # Load correct environment variables, modules, etc.
-module purge
-module load Python/3.11.5
-module load GCCcore/13.2.0
-source ${REPO_DIR}/pyenv/bin/activate
+source ${REPO_DIR}/hpc-env/lalejini-hpc-env.sh
 
 mkdir -p ${RUN_DIR}
 cd ${RUN_DIR}

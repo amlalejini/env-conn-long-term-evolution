@@ -22,7 +22,7 @@ JOB_DIR=${DATA_DIR}/jobs
 CONFIG_DIR=${HOME_EXP_DIR}/hpc/config
 
 # (1) Activate appropriate Python virtual environment
-source ${REPO_DIR}/pyenv/bin/activate
+source ${REPO_DIR}/hpc-env/lalejini-hpc-env.sh
 # (2) Generate graphs
 python3 ${REPO_SCRIPTS_DIR}/gen-graphs.py --config ${GRAPHS_CFG} --dump_dir ${GRAPHS_DIR}
 # (3) Generate slurm script
