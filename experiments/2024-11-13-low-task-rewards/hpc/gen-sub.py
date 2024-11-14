@@ -53,7 +53,6 @@ fixed_params_direct = {
     "WORLD_Y": "60",
     "PHYLOGENY_SNAPSHOT_RES": fixed_params_dynamic["updates"],
     "SYSTEMATICS_RES": "100",
-    "FORCE_MRCA_COMP": "1",
     "COPY_MUT_PROB": "0.0025",
     "DIVIDE_INS_PROB": "0.05",
     "DIVIDE_DEL_PROB": "0.05",
