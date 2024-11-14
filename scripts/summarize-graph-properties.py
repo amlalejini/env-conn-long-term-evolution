@@ -43,7 +43,6 @@ def main():
     parser.add_argument("--graph_birth_data", type=str, help="Summary data file containing graph birth location data.")
     parser.add_argument("--graphs_dir", type=str, help="Path to directory containing relevant graphs")
     parser.add_argument("--dump_dir", type=str, default=".", help="Where to write output files")
-    # parser.add_argument("--")
 
     args = parser.parse_args()
     summary_data_path = args.summary_data
@@ -82,7 +81,7 @@ def main():
     # Organize data by graph file / graph type
     data_by_graph = {}
     for line in summary_data:
-        if any(g in line["graph_file"] for g in exclude_graphs) or line["graph_file"] != "linear-chain.mat":
+        if any(g in line["graph_file"] for g in exclude_graphs):
             continue
         graph = line["graph_file"] if line["graph_file"] != "none" else line["graph_type"]
         if not graph in data_by_graph:
