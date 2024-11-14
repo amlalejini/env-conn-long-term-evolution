@@ -30,7 +30,7 @@ python3 ${REPO_SCRIPTS_DIR}/annotate-graph-loc-info.py \
   --graphs_dir ${GRAPHS_DIR} \
   --dump_dir ${DUMP_DIR}
 
-python3 ${REPO_SCRIPTS_DIR}/analyze-hotspots.py \
+python3 ${REPO_SCRIPTS_DIR}/summarize-node-properties.py \
   --summary_data ${DUMP_DIR}/summary.csv \
   --graph_birth_data ${DUMP_DIR}/graph_birth_info.csv \
   --graphs_dir ${GRAPHS_DIR} \
