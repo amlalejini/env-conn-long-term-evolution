@@ -1,0 +1,37 @@
+{
+  "graphs-to-generate": [
+    {
+      "graph": "linear-chain",
+      "params": {"nodes": 3600}
+    },
+    {
+      "graph": "cycle",
+      "params": {"nodes": 3600}
+    },
+    {
+      "graph": "barbell",
+      "params": {"clique_size": 180, "chain_size": 3240},
+      "output_id": "barbell_clique10_chain90"
+    },
+    {
+      "graph": "barbell",
+      "params": {"clique_size": 360, "chain_size": 2880},
+      "output_id": "barbell_clique20_chain80"
+    },
+    {
+      "graph": "barbell",
+      "params": {"clique_size": 900, "chain_size": 1800},
+      "output_id": "barbell_clique50_chain50"
+    },
+    {
+      "graph": "barbell",
+      "params": {"clique_size": 1440, "chain_size": 720},
+      "output_id": "barbell_clique80_chain20"
+    },
+    {
+      "graph": "barbell",
+      "params": {"clique_size": 1620, "chain_size": 360},
+      "output_id": "barbell_clique90_chain10"
+    }
+  ]
+}
