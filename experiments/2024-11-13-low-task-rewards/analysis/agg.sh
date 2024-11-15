@@ -5,7 +5,7 @@ REPO_DIR=/mnt/home/gordongr/research/${PROJECT_NAME}
 REPO_SCRIPTS_DIR=${REPO_DIR}/scripts
 HOME_EXP_DIR=${REPO_DIR}/experiments/${EXP_SLUG}
 GRAPHS_DIR=${HOME_EXP_DIR}/hpc/spatial-structs
-DATA_DIR=/mnt/scratch/lalejini/data-gordongr/${PROJECT_NAME}/${EXP_SLUG}
+DATA_DIR=/mnt/projects/lalejina_project/data-gordongr/${PROJECT_NAME}/${EXP_SLUG}
 
 
 ANALYSIS_DIR=${HOME_EXP_DIR}/analysis/
@@ -30,11 +30,11 @@ python3 ${REPO_SCRIPTS_DIR}/annotate-graph-loc-info.py \
   --graphs_dir ${GRAPHS_DIR} \
   --dump_dir ${DUMP_DIR}
 
-python3 ${REPO_SCRIPTS_DIR}/summarize-node-properties.py \
-  --summary_data ${DUMP_DIR}/summary.csv \
-  --graph_birth_data ${DUMP_DIR}/graph_birth_info.csv \
-  --graphs_dir ${GRAPHS_DIR} \
-  --dump_dir ${DUMP_DIR}
+# python3 ${REPO_SCRIPTS_DIR}/summarize-node-properties.py \
+#   --summary_data ${DUMP_DIR}/summary.csv \
+#   --graph_birth_data ${DUMP_DIR}/graph_birth_info.csv \
+#   --graphs_dir ${GRAPHS_DIR} \
+#   --dump_dir ${DUMP_DIR}
 
 python3 ${REPO_SCRIPTS_DIR}/run-morans-i.py \
   --graph_loc_data ${DUMP_DIR}/graph_birth_info_annotated.csv \
