@@ -858,13 +858,11 @@ morans_i_data <- morans_i_data %>%
     graph_type = factor(
       graph_type,
       levels = c(
+        "circular-ladder-graph",
+        "connected-caveman",
         "cycle",
-        "toroidal-lattice_2x1800",
-        "toroidal-lattice_3x1200",
-        "toroidal-lattice_4x900",
-        "toroidal-lattice_15x240",
-        "toroidal-lattice_30x120",
-        "toroidal-lattice_60x60"
+        "random-waxman",
+        "well-mixed"
       )
     ),
     seed = as.factor(seed)

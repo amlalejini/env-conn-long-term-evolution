@@ -1,12 +1,12 @@
 EXP_SLUG=2024-11-13-low-task-rewards
 PROJECT_NAME=env-conn-long-term-evolution
 
+
 REPO_DIR=/mnt/home/gordongr/research/${PROJECT_NAME}
 REPO_SCRIPTS_DIR=${REPO_DIR}/scripts
 HOME_EXP_DIR=${REPO_DIR}/experiments/${EXP_SLUG}
 GRAPHS_DIR=${HOME_EXP_DIR}/hpc/spatial-structs
 DATA_DIR=/mnt/projects/lalejina_project/data-gordongr/${PROJECT_NAME}/${EXP_SLUG}
-
 
 ANALYSIS_DIR=${HOME_EXP_DIR}/analysis/
 DUMP_DIR=${ANALYSIS_DIR}/dump/

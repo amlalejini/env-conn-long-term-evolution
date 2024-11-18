@@ -1,6 +1,7 @@
+# 2024-11-14 Analysis Code
+
 
 ```{r}
-library(jsonlite)
 library(tidyverse)
 library(cowplot)
 library(RColorBrewer)
@@ -20,11 +21,13 @@ working_directory <- paste(
   sep = "/"
 )
 # Adjust working directory if being knitted for bookdown build.
-# if (bookdown) {
-#   working_directory <- paste0(
-#     bookdown_wd_prefix,
-#     working_directory
-#   )
+# if (exists("bookdown")) {
+#   if (bookdown) {
+#     working_directory <- paste0(
+#       bookdown_wd_prefix,
+#       working_directory
+#     )
+#   }
 # }
 ```
 
@@ -45,10 +48,10 @@ dir.create(
 ```
 
 ```{r}
-
 # Load summary data from final update
 data_path <- paste(
   working_directory,
+  "data",
   "summary.csv",
   sep = "/"
 )
@@ -56,14 +59,24 @@ data <- read_csv(data_path)
 
 data <- data %>%
   mutate(
-    graph_type = as.factor(graph_type)
+    graph_type = factor(
+      graph_type,
+      levels = c(
+        "circular-ladder-graph",
+        "connected-caveman",
+        "cycle",
+        "random-waxman",
+        "well-mixed"
+  
+      )
+    )
   )
-
 ```
 
 ```{r}
 time_series_path <- paste(
   working_directory,
+  "data",
   "time_series.csv",
   sep = "/"
 )
@@ -71,22 +84,27 @@ time_series_data <- read_csv(time_series_path)
 
 time_series_data <- time_series_data %>%
   mutate(
-    graph_type = as.factor(graph_type),
+    graph_type = factor(
+      graph_type,
+      levels = c(
+        "circular-ladder-graph",
+        "connected-caveman",
+        "cycle",
+        "random-waxman",
+        "well-mixed"
+      )
+    ),
     seed = as.factor(seed)
   )
 ```
+
 
 ```{r}
 
 # Grab just completed rows
 completed_runs_data <- data %>%
   filter(
-    update == 100000
-  )
-
-incomplete_runs <- data %>%
-  filter(
-    update != 100000
+    update == 200000
   )
 ```
 
@@ -133,6 +151,27 @@ ggsave(
 )
 ```
 
+
+```{r}
+kruskal.test(
+  formula = pop_task_total ~ graph_type,
+  data = filter(completed_runs_data)
+)
+
+wc_results <- pairwise.wilcox.test(
+  x = completed_runs_data$pop_task_total,
+  g = completed_runs_data$graph_type,
+  p.adjust.method	= "holm",
+  exact = FALSE
+
+)
+
+pop_task_wc_table <- kbl(wc_results$p.value) %>% kable_styling()
+save_kable(pop_task_wc_table, paste0(plot_dir, "/pop_task_wc_table.pdf"))
+```
+
+## Dominant tasks
+
 ```{r}
 dom_tasks_total_plt <- ggplot(
   data = completed_runs_data,
@@ -175,48 +214,9 @@ ggsave(
 
 ```{r}
 kruskal.test(
-  formula = pop_task_total ~ graph_type,
-  data = filter(completed_runs_data, graph_type != "star")
+  formula = dom_task_total ~ graph_type,
+  data = filter(completed_runs_data)
 )
-
-pairwise.wilcox.test(
-  x = filter(completed_runs_data, graph_type != "star")$pop_task_total,
-  g = filter(completed_runs_data, graph_type != "star")$graph_type,
-  p.adjust.method	= "holm"
-
-)
-```
-
-## Number of Equals
-
-```{r}
-num_equals_data <- completed_runs_data %>%
-  group_by(
-    graph_type
-  ) %>%
-  summarize(
-    num_dom_equals = sum(dom_detail_equals),
-    no_dom_equals = n() - sum(dom_detail_equals),
-    num_pop_equals = sum(pop_task_equals),
-    no_pop_equals = n() - sum(pop_task_equals)
-  )
-num_equals_table <- kbl(num_equals_data) %>% kable_styling()
-save_kable(num_equals_table, paste0(plot_dir, "/num_equals_table.pdf"))
-
-fisher_results <- num_equals_data %>%
-  filter(graph_type != "star") %>%
-  select(
-    graph_type, num_pop_equals, no_pop_equals
-  ) %>%
-  column_to_rownames(
-    var = "graph_type"
-  ) %>%
-  pairwise_fisher_test(
-    p.adjust.method = "holm",
-  )
-
-fisher_table <- kbl(fisher_results) %>% kable_styling()
-save_kable(fisher_table, paste0(plot_dir, "/pop_equals_stats.pdf"))
 ```
 
 ## MRCA Changes
@@ -303,47 +303,6 @@ ggsave(
 )
 ```
 
-## Average generations per sweep
-
-```{r}
-avg_gens_per_sweep_plt <- ggplot(
-  data = completed_runs_data,
-  mapping = aes(
-    x = graph_type,
-    y = time_average_generation / phylodiv_mrca_changes,
-    fill = graph_type
-  )
-) +
-  geom_flat_violin(
-    position = position_nudge(x = .2, y = 0),
-    alpha = .8
-  ) +
-  geom_point(
-    mapping=aes(color = graph_type),
-    position = position_jitter(width = .15),
-    size = .5,
-    alpha = 0.8
-  ) +
-  geom_boxplot(
-    width = .1,
-    outlier.shape = NA,
-    alpha = 0.5
-  ) +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
-  )
-
-ggsave(
-  filename = paste0(plot_dir, "/avg_gens_per_mrca_change.pdf"),
-  plot = avg_gens_per_sweep_plt,
-  width = 15,
-  height = 10
-)
-```
 
 ## Phylogenetic diversity
 <!-- phylodiv_current_phylogenetic_diversity
@@ -391,7 +350,7 @@ ggsave(
 
 ```{r}
 phylodiv_diversity_plt <- ggplot(
-  data = filter(completed_runs_data, graph_type != "star"),
+  data = completed_runs_data,
   mapping = aes(
     x = graph_type,
     y = phylodiv_diversity,
@@ -428,6 +387,7 @@ ggsave(
   height = 10
 )
 ```
+
 ## Population task count over time
 
 ```{r}
@@ -461,51 +421,31 @@ ggsave(
 )
 ```
 
-## Proportion of equals over time
-
 ```{r}
-equals_cnt_ts <- time_series_data %>%
-  mutate(
-    update_grp = as.factor(update)
-  ) %>%
-  group_by(
-    update_grp,
-    graph_type
-  ) %>%
-  summarize(
-    n_equals = sum(pop_task_equals_done),
-    prop_equals = sum(pop_task_equals_done) / n(),
-    n = n(),
-    update = first(update)
-  ) %>%
-  ungroup()
-```
-
-```{r}
-equals_cnt_ts_plt <- ggplot(
-    data = equals_cnt_ts,
+pop_task_cnt_ts <- ggplot(
+    data = filter(time_series_data, update <= 10000),
     mapping = aes(
       x = update,
-      y = prop_equals,
+      y = pop_task_total_tasks_done,
       color = graph_type,
       fill = graph_type
     )
   ) +
   stat_summary(fun = "mean", geom = "line") +
-  # stat_summary(
-  #   fun.data = "mean_cl_boot",
-  #   fun.args = list(conf.int = 0.95),
-  #   geom = "ribbon",
-  #   alpha = 0.2,
-  #   linetype = 0
-  # ) +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
   theme(legend.position = "bottom")
 
 ggsave(
-  plot = equals_cnt_ts_plt,
+  plot = pop_task_cnt_ts,
   filename = paste0(
     working_directory,
-    "/plots/equals_cnt_ts_plt.pdf"
+    "/plots/pop_tasks_ts_10k.pdf"
   ),
   width = 15,
   height = 10
@@ -578,7 +518,6 @@ ggsave(
 
 ## Average generation over time
 
-
 ```{r}
 time_average_generation_ts <- ggplot(
     data = time_series_data,
@@ -609,3 +548,480 @@ ggsave(
   height = 10
 )
 ```
+
+## MRCA changes over time
+
+```{r}
+mrca_changes_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_mrca_changes,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = mrca_changes_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/mrca_changes_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+mrca_changes_ts <- ggplot(
+    data = filter(
+      time_series_data,
+      update >= 150000 & update <= 200000
+    ),
+    mapping = aes(
+      x = update,
+      y = phylodiv_mrca_changes,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = mrca_changes_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/mrca_changes_ts_mod.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## Average phylo depth over time
+
+```{r}
+phylo_ave_depth_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_ave_depth,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylo_ave_depth_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylo_ave_depth_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+## Graph location info
+
+Analyze graph_birth_info_annotated.csv
+
+```{r}
+# Load summary data from final update
+graph_loc_data_path <- paste(
+  working_directory,
+  "data",
+  "graph_birth_info_annotated.csv",
+  sep = "/"
+)
+graph_loc_data <- read_csv(graph_loc_data_path)
+
+graph_loc_data <- graph_loc_data %>%
+  mutate(
+    graph_type = factor(
+      graph_type,
+      levels = c(
+        "circular-ladder-graph",
+        "connected-caveman",
+        "cycle",
+        "random-waxman",
+        "well-mixed"
+      )
+    ),
+    seed = as.factor(seed)
+  )
+```
+
+Summarize by seed
+```{r}
+graph_loc_data_summary <- graph_loc_data %>%
+  group_by(seed, graph_type) %>%
+  summarize(
+    births_var = var(births),
+    births_total = sum(births),
+    task_apps_total = sum(task_appearances),
+    task_apps_var = var(task_appearances)
+  ) %>%
+  ungroup()
+```
+
+### Total birth Counts
+
+```{r}
+birth_counts_total_plt <- ggplot(
+  data = graph_loc_data_summary,
+  mapping = aes(
+    x = graph_type,
+    y = births_total,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/birth_counts_total.pdf"),
+  plot = birth_counts_total_plt,
+  width = 15,
+  height = 10
+)
+```
+
+### Variance birth Counts
+
+```{r}
+birth_counts_var_plt <- ggplot(
+  data = graph_loc_data_summary,
+  mapping = aes(
+    x = graph_type,
+    y = births_var,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/birth_counts_var.pdf"),
+  plot = birth_counts_var_plt,
+  width = 15,
+  height = 10
+)
+```
+
+### Task appearances total
+
+```{r}
+task_apps_total_plt <- ggplot(
+  data = graph_loc_data_summary,
+  mapping = aes(
+    x = graph_type,
+    y = task_apps_total,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/task_apps_total.pdf"),
+  plot = task_apps_total_plt,
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+kruskal.test(
+  formula = task_apps_total ~ graph_type,
+  data = graph_loc_data_summary
+)
+
+wc_results <- pairwise.wilcox.test(
+  x = graph_loc_data_summary$task_apps_total,
+  g = graph_loc_data_summary$graph_type,
+  p.adjust.method	= "holm",
+  exact = FALSE
+
+)
+wc_results
+```
+
+
+## Moran's I results
+
+```{r}
+# Load summary data from final update
+morans_i_data_path <- paste(
+  working_directory,
+  "data",
+  "morans_i.csv",
+  sep = "/"
+)
+morans_i_data <- read_csv(morans_i_data_path)
+
+morans_i_data <- morans_i_data %>%
+  mutate(
+    graph_type = str_split_i(
+      graph_file,
+      pattern = ".mat",
+      1
+    )
+  ) %>%
+  mutate(
+    graph_type = factor(
+      graph_type,
+      levels = c(
+        "circular-ladder-graph",
+        "connected-caveman",
+        "cycle",
+        "random-waxman",
+        "well-mixed"
+      )
+    ),
+    seed = as.factor(seed)
+  )
+```
+
+### Clustered task appearances
+
+Summarize statistically significant runs where I > 0.
+
+```{r}
+# Identify number of runs where distribution of task appearances is more
+# clustered than we would expect by chance.
+clustered_counts <- morans_i_data %>%
+  filter(
+    (task_morans_i > 0) & (task_p_val <= 0.05)
+  ) %>%
+  group_by(graph_type) %>%
+  summarize(
+    n = n()
+  )
+```
+
+```{r}
+tasks_clustered_plt <- clustered_counts %>%
+  ggplot(
+    aes(
+      x = graph_type,
+      y = n,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  geom_col() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/tasks_clustered_plt.pdf"),
+  plot = tasks_clustered_plt,
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+tasks_clustered_i_vals_plt <- morans_i_data %>%
+  filter((task_morans_i > 0) & (task_p_val <= 0.05)) %>%
+  ggplot(
+    mapping = aes(
+      x = graph_type,
+      y = task_morans_i,
+      fill = graph_type
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/tasks_clustered_i_vals_plt.pdf"),
+  plot = tasks_clustered_i_vals_plt,
+  width = 15,
+  height = 10
+)
+```
+
+### Clustered birth counts
+
+```{r}
+births_clustered_plot <- morans_i_data %>%
+  filter((birth_morans_i > 0) & (birth_p_val <= 0.05)) %>%
+  ggplot(
+    aes(
+      x = graph_type,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  geom_bar() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/births_clustered_plot.pdf"),
+  plot = births_clustered_plot,
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+birth_clustered_i_vals_plt <- morans_i_data %>%
+  filter((birth_morans_i > 0) & (birth_p_val <= 0.05)) %>%
+  ggplot(
+    mapping = aes(
+      x = graph_type,
+      y = birth_morans_i,
+      fill = graph_type
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/birth_clustered_i_vals_plt.pdf"),
+  plot = birth_clustered_i_vals_plt,
+  width = 15,
+  height = 10
+)
+```
+
+## End
