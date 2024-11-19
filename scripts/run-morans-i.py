@@ -3,7 +3,6 @@ import os
 import networkx as nx
 import utilities as utils
 import graph_utilities as gutils
-import statistics as stats
 import copy
 import sys
 import pathlib
