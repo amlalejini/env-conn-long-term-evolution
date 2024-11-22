@@ -6,7 +6,6 @@ import graph_utilities as gutils
 import copy
 import sys
 import pathlib
-import tracemalloc
 # Add scripts directory to path, import utilities from scripts directory.
 sys.path.append(
     os.path.join(
