@@ -6,6 +6,7 @@ import graph_utilities as gutils
 import copy
 import sys
 import pathlib
+import tracemalloc
 # Add scripts directory to path, import utilities from scripts directory.
 sys.path.append(
     os.path.join(
@@ -52,12 +53,16 @@ def main():
     graph_loc_data = utils.read_csv(graph_loc_data_path)
     graph_files = list({line["graph_file"] for line in graph_loc_data})
     graphs = {}
+    print("checkpoint 1")
     for graph_file in graph_files:
+        print(f"reading in graph: {graph_file}")
         graph_file_path = os.path.join(graphs_dir, graph_file)
         graphs[graph_file] = gutils.read_graph_matrix(graph_file_path)
     # Organize data by run
     data_by_run = {}
     graph_files_by_run = {}
+    print("checkpoint 2")
+
     for line in graph_loc_data:
         run_seed = line["seed"]
         if not run_seed in data_by_run:
@@ -69,6 +74,8 @@ def main():
     graphs_by_run = {}
     output_content = []
     cnt = 0
+    print("checkpoint 3")
+
     for run_id in data_by_run:
         print(f"Processing run {cnt+1}/{len(data_by_run)}")
         info = {}
@@ -77,6 +84,8 @@ def main():
         graphs_by_run[run_id] = copy.deepcopy(graphs[graph_file])
         # Next, annotate using graph data
         run_data = data_by_run[run_id]
+        print("checkpoint 4")
+
         for line in run_data:
             loc_id = int(line["loc_id"])
             births = line["births"]
@@ -112,6 +121,8 @@ def main():
         #     Np = 100,
         #     drop_weights=False
         # )
+        print("checkpoint 6")
+
 
         task_moran_i = task_result[0]
         task_p_val = task_result[1]
