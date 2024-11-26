@@ -193,9 +193,24 @@ def main():
 
     # -- Generate analyze.cfg script --
     # Get tasks from environment file
-    env_fname = default_environment_filename if "ENVIRONMENT_FILE" not in fixed_params_direct else fixed_params_direct["ENVIRONMENT_FILE"]
+    env_fname = default_environment_filename
+    if "ENVIRONMENT_FILE" in fixed_params_direct:
+        env_fname = fixed_params_direct["ENVIRONMENT_FILE"]
+    elif "ENVIRONMENT_FILE" in combos.var_name_list:
+        # Ensure that all environment files have same tasks, if so, just use arbirary.
+        env_files = {combo["ENVIRONMENT_FILE"] for combo in combo_list}
+        env_tasks = set()
+        for env_file in env_files:
+            tasks = utils.get_tasks_from_environment_file(os.path.join(config_dir, env_file))
+            env_tasks.add("".join(tasks))
+            if len(env_tasks) > 1:
+                print(f"Environment tasks mismatch {env_file}")
+                exit(-1)
+        env_fname = list(env_files)[-1]
+
     env_file_path = os.path.join(config_dir, env_fname)
     tasks = utils.get_tasks_from_environment_file(env_file_path)
+
     detail_tasks_str = " ".join([f"task.{i}" for i in range(len(tasks))])
     # Load in the base slurm file
     base_analyze_script = ""
