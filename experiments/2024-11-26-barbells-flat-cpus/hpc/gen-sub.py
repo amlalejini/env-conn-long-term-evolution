@@ -253,6 +253,11 @@ def main():
 
         # Add fixed direct params to cmd line arguments
         cmd_line_params = {param:fixed_params_direct[param] for param in fixed_params_direct}
+        for param in condition_info:
+            # if "__DYNAMIC" in param or "__COPY_OVER" in param:
+            if any([dec in param for dec in special_decorators]):
+                continue
+            cmd_line_params[param] = condition_info[param]
 
         # -- Generate events file --
         #   cfgs to replace:
