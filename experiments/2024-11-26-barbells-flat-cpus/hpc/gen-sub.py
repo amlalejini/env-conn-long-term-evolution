@@ -90,6 +90,7 @@ combos.add_val(
     ]
 )
 
+combos.register_var("ENVIRONMENT_FILE")
 combos.add_val(
     "ENVIRONMENT_FILE",
     [
