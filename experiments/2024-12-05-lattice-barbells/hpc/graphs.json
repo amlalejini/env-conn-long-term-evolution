@@ -1,0 +1,38 @@
+{
+  "graphs-to-generate": [
+    {
+      "graph": "linear-chain",
+      "params": {"nodes": 3600}
+    },
+    {
+      "graph": "toroidal-lattice-barbell",
+      "params": {"lattice_width": 12, "lattice_height": 15, "chain_length": 3240},
+      "output_id": "barbell_lattice10_chain90"
+    },
+    {
+      "graph": "toroidal-lattice-barbell",
+      "params": {"lattice_width": 18, "lattice_height": 20, "chain_length": 2880},
+      "output_id": "barbell_lattice20_chain80"
+    },
+    {
+      "graph": "toroidal-lattice-barbell",
+      "params": {"lattice_width": 30, "lattice_height": 30, "chain_length": 1800},
+      "output_id": "barbell_lattice50_chain50"
+    },
+    {
+      "graph": "toroidal-lattice-barbell",
+      "params": {"lattice_width": 36, "lattice_height": 40, "chain_length": 720},
+      "output_id": "barbell_lattice80_chain20"
+    },
+    {
+      "graph": "toroidal-lattice-barbell",
+      "params": {"lattice_width": 36, "lattice_height": 45, "chain_length": 360},
+      "output_id": "barbell_lattice90_chain10"
+    },
+    {
+      "graph": "toroidal-lattice",
+      "params": {"graph_width": 60, "graph_height":60},
+      "output_id": "toroidal-lattice_60x60"
+    }
+  ]
+}
