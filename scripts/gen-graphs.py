@@ -108,6 +108,11 @@ defaults = {
     "ring-k-regular":{
         "nodes": 100,
         "k": 10
+    },
+    "toroidal-lattice-barbell": {
+        "lattice_width": 10,
+        "lattice_height": 10,
+        "chain_length": 10
     }
 
 }

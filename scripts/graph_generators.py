@@ -5,8 +5,6 @@ networkx objects).
 Many of the functions from this are copied / adapted from those in this repository:
     https://github.com/amlalejini/alife-2024-spatial-chem-eco
 '''
-#TODO input validation/ edge case testing
-print
 import random
 import networkx as nx
 #import matplotlib.pyplot as plt
@@ -238,6 +236,60 @@ def gen_graph_barbell(
         chain_size(int)
     '''
     return nx.barbell_graph(m1 = clique_size, m2 = chain_size)
+
+def gen_graph_toroidal_lattice_barbell(
+    lattice_width:int,
+    lattice_height:int,
+    chain_length:int
+):
+    '''
+    Generates a modified barbell graph structure where two identical toroidal lattices are connected by a single linear chain.
+    '''
+    # Generate left/right lattice and chain.
+    left_lattice = gen_graph_toroidal_lattice(
+        graph_width=lattice_width,
+        graph_height=lattice_height
+    )
+    right_lattice = gen_graph_toroidal_lattice(
+        graph_width=lattice_width,
+        graph_height=lattice_height
+    )
+    chain =  gen_graph_linear_chain(chain_length)
+    # Build combined graph, starting with left lattice.
+    combined_nodes = [node_id for node_id in left_lattice.nodes]
+    combined_edges = [edge for edge in left_lattice.edges]
+    prev_node_cnt = len(combined_nodes)
+    # Add chain to left lattice at left_lattice.nodes[-1]
+    # - Add connection between chain and lattice
+    left_chain_node_id = prev_node_cnt
+    combined_edges.append(
+        (list(left_lattice.nodes)[-1], left_chain_node_id)
+    )
+    # - Offset node ids by size of left lattice
+    combined_nodes.extend(
+        [node_id + prev_node_cnt for node_id in chain.nodes]
+    )
+    # - Offset node ids in connections by size of left lattice
+    combined_edges.extend(
+        [(edge[0] + prev_node_cnt, edge[1] + prev_node_cnt) for edge in chain.edges]
+    )
+    # Add right lattice
+    prev_node_cnt = len(combined_nodes)
+    right_chain_node_id = list(chain.nodes)[-1] + len(left_lattice.nodes)
+    # Add chain to right lattice at right_lattice.nodes[0]
+    combined_edges.append(
+        (right_chain_node_id, prev_node_cnt)
+    )
+    combined_nodes.extend(
+        [node_id + prev_node_cnt for node_id in right_lattice.nodes]
+    )
+    combined_edges.extend(
+        [(edge[0] + prev_node_cnt, edge[1] + prev_node_cnt) for edge in right_lattice.edges]
+    )
+    graph = nx.Graph()
+    graph.add_nodes_from(combined_nodes)
+    graph.add_edges_from(combined_edges)
+    return graph
 
 def gen_graph_clique_ring(
         clique_size:int,
@@ -705,6 +757,7 @@ _graph_generators = {
     "clique-ring": gen_graph_clique_ring,
     "hierarchical-clique-ring": gen_graph_hierarchical_clique_ring,
     "barbell": gen_graph_barbell,
+    "toroidal-lattice-barbell": gen_graph_toroidal_lattice_barbell,
     #Newly added by Grant
     "random-k-regular": gen_graph_random_k_regular,
     "connected-caveman": gen_graph_connected_caveman,
@@ -735,7 +788,7 @@ def get_generator_fun(name:str):
     # )
     # plt.show()
 
-
+gen_graph_toroidal_lattice_barbell(10, 10, 10)
 
 
 
