@@ -50,21 +50,22 @@ combos = CombinationCollector()
 # Special parameters are used to generate the SLURM script but not
 # used directly as Avida configuration settings
 fixed_params_dynamic = {
-    "updates": "400000",
-    "print_data_resolution": "100"
+    "updates": "100000",
+    "print_data_resolution": "100",
+    "dump_data_resolution": "10000"
 }
 
 fixed_params_direct = {
     "WORLD_X": "60",
     "WORLD_Y": "60",
     "PHYLOGENY_SNAPSHOT_RES": fixed_params_dynamic["updates"],
-    "SYSTEMATICS_RES": "100",
+    "SYSTEMATICS_RES": "1000",
     "COPY_MUT_PROB": "0.0025",
     "DIVIDE_INS_PROB": "0.05",
     "DIVIDE_DEL_PROB": "0.05",
-    "FILTER_TIME": "10000",
-    "OEE_RES": "1000",
-    "TRACK_INDIVIDUALS": "0",
+    "FILTER_TIME": "-1",
+    "OEE_RES": "0",
+    "TRACK_INDIVIDUALS": "1",
     "ALLOW_PARENT": "0",
     "SLICING_METHOD": slicing_method_modes["constant"]
 }
@@ -272,6 +273,10 @@ def main():
         base_events_content = base_events_content.replace(
             "<<DATA_PRINT_INTERVAL>>",
             fixed_params_dynamic["print_data_resolution"]
+        )
+        base_events_content = base_events_content.replace(
+            "<<DATA_DUMP_INTERVAL>>",
+            fixed_params_dynamic["dump_data_resolution"]
         )
         base_events_content = base_events_content.replace(
             "<<SAVE_POP_RESOLUTION>>",
