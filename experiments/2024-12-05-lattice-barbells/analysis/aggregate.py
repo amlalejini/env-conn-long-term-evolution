@@ -32,6 +32,8 @@ run_cfg_fields_summary = {
     "graph_file",
     "graph_type",
     "events_file_name",
+    "EVENT_FILE",
+    "ENVIRONMENT_FILE",
     "seed"
 }
 
