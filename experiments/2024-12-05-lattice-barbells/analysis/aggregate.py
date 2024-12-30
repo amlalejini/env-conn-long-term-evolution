@@ -39,7 +39,8 @@ run_cfg_fields_summary = {
 
 run_cfg_fields_time_series = {
     "graph_type",
-    "seed"
+    "seed",
+    "ENVIRONMENT_FILE"
 }
 
 # Fields to pull from phylodiversity.csv file
