@@ -9,11 +9,9 @@
 
 ########## Command Lines to Run ##########
 
-
+# Determine base seed
 JOB_SEED_OFFSET=<<JOB_SEED_OFFSET>>
-NUM_RUNS=<<NUM_RUNS_PER_JOB>>
 BASE_SEED=$((JOB_SEED_OFFSET + SLURM_ARRAY_TASK_ID - 1))
-RUN_ID=$((SLURM_ARRAY_TASK_ID - 1))
 
 # Variables for convenience
 EXEC=<<EXEC>>
@@ -28,12 +26,21 @@ source ${REPO_DIR}/hpc-env/lalejini-clipper-env.sh
 # BASE_RUN_DIR should be directory to hold all run directories.
 BASE_RUN_DIR=<<BASE_RUN_DIR>>
 CONDITION_ID=<<CONDITION_ID>>
+
+# Calculate number of runs for this job
+SLURM_ARRAY_I=$((SLURM_ARRAY_TASK_ID - 1)) # 0-index the array id
+NUM_RUNS_PER_JOB=<<NUM_RUNS_PER_JOB>>
+TOTAL_REPLICATES=<<TOTAL_REPLICATES>>
+RUNS_COVERED=$((SLURM_ARRAY_I*NUM_RUNS_PER_JOB))
+RUNS_LEFT=$((TOTAL_REPLICATES - RUNS_COVERED))
+NUM_RUNS=$((RUNS_LEFT < NUM_RUNS_PER_JOB ? RUNS_LEFT : NUM_RUNS_PER_JOB ))
+
 # Loop over all runs for this job
 for ((i=0; i<$NUM_RUNS; i++)); do
   echo "===== Starting next run, $i ====="
   # Calculate seed for this run.
-  SEED=$((BASE_SEED+i))
-  RUN_ID=${i}
+  RUN_ID=$(((SLURM_ARRAY_I*NUM_RUNS_PER_JOB) + i))
+  SEED=$((BASE_SEED + RUN_ID))
   # Make run directory
   RUN_DIR=${BASE_RUN_DIR}/RUN_${CONDITION_ID}_${SEED}
   mkdir -p ${RUN_DIR}
