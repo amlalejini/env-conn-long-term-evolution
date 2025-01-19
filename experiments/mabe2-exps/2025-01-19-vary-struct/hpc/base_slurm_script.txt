@@ -1,0 +1,49 @@
+#!/bin/bash
+########## Define Resources Needed with SBATCH Lines ##########
+
+#SBATCH --time=<<TIME_REQUEST>>          # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --array=<<ARRAY_ID_RANGE>>
+#SBATCH --mem=<<MEMORY_REQUEST>>        # memory required per node - amount of memory (in bytes)
+#SBATCH --job-name <<JOB_NAME>>         # you can give your job a name for easier identification (same as -J)
+<<ACCOUNT_INFO>>
+
+########## Command Lines to Run ##########
+
+
+JOB_SEED_OFFSET=<<JOB_SEED_OFFSET>>
+NUM_RUNS=<<NUM_RUNS_PER_JOB>>
+BASE_SEED=$((JOB_SEED_OFFSET + SLURM_ARRAY_TASK_ID - 1))
+RUN_ID=$((SLURM_ARRAY_TASK_ID - 1))
+
+# Variables for convenience
+EXEC=<<EXEC>>
+CONFIG_DIR=<<CONFIG_DIR>>
+REPO_DIR=<<REPO_DIR>>
+SPATIAL_STRUCT_DIR=<<SPATIAL_STRUCT_DIR>>
+PARAM_SNAPSHOT_DIR=<<PARAM_SNAPSHOT_DIR>>
+
+# Load correct environment variables, modules, etc.
+source ${REPO_DIR}/hpc-env/lalejini-clipper-env.sh
+
+# BASE_RUN_DIR should be directory to hold all run directories.
+BASE_RUN_DIR=<<BASE_RUN_DIR>>
+CONDITION_ID=<<CONDITION_ID>>
+# Loop over all runs for this job
+for ((i=0; i<$NUM_RUNS; i++)); do
+  echo "===== Starting next run, $i ====="
+  # Calculate seed for this run.
+  SEED=$((BASE_SEED+i))
+  RUN_ID=${i}
+  # Make run directory
+  RUN_DIR=${BASE_RUN_DIR}/RUN_${CONDITION_ID}_${SEED}
+  mkdir -p ${RUN_DIR}
+  cd ${RUN_DIR}
+  cp ${CONFIG_DIR}/${EXEC} .
+  <<CONFIG_CP_CMDS>>
+  <<RUN_CMDS>>
+  <<ANALYSIS_CMDS>>
+  # Clean up run directory
+  rm ${RUN_DIR}/${EXEC}
+done
+
+echo "Done!"

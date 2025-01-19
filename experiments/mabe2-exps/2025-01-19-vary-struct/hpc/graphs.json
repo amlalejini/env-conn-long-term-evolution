@@ -1,0 +1,72 @@
+{
+  "graphs-to-generate": [
+    {
+      "graph": "star",
+      "params": {"nodes": 3600},
+      "output_mode": "list"
+    },
+    {
+      "graph": "random-waxman",
+      "params": {"nodes": 3600, "beta": 0.4, "alpha": 0.2},
+      "base_seed": 1000,
+      "output_id": "random-waxman",
+      "count": 50,
+      "output_mode": "list"
+    },
+    {
+      "graph": "comet-kite",
+      "params": {
+        "core_size":1440,
+        "num_tails": 720,
+        "additional_tail_nodes": 1440
+      },
+      "increase_size_to": 3600,
+      "count": 50,
+      "output_mode": "list"
+    },
+    {
+      "graph": "linear-chain",
+      "params": {"nodes": 3600},
+      "output_mode": "list"
+    },
+    {
+      "graph": "cycle",
+      "params": {"nodes": 3600},
+      "output_mode": "list"
+    },
+    {
+      "graph": "clique-ring",
+      "params": {
+        "clique_size": 115,
+        "clique_count": 30,
+        "nodes_between_cliques": 5
+      },
+      "increase_size_to": 3600,
+      "base_seed": 1000,
+      "count": 50,
+      "output_mode": "list"
+    },
+    {
+      "graph": "toroidal-lattice",
+      "params": {
+        "graph_width": 60,
+        "graph_height": 60
+      },
+      "output_mode": "list"
+    },
+    {
+      "graph": "well-mixed",
+      "params": {
+        "nodes": 3600
+      },
+      "output_mode": "list"
+    },
+    {
+      "graph": "wheel",
+      "params": {
+        "nodes": 3600
+      },
+      "output_mode": "list"
+    }
+  ]
+}
