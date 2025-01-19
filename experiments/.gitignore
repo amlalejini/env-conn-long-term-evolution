@@ -5,3 +5,6 @@ events/
 param_snapshots/
 
 !*.cfg
+
+MABE
+avida
