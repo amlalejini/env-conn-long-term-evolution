@@ -125,6 +125,10 @@ output_modes = {
     "edges": {
         "ext": "csv",
         "write_fun": gutils.write_undirected_graph_to_edges_csv
+    },
+    "list": {
+        "ext": "txt",
+        "write_fun": gutils.write_undirected_graph_to_adj_list
     }
 }
 

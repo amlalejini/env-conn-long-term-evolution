@@ -788,9 +788,6 @@ def get_generator_fun(name:str):
     # )
     # plt.show()
 
-gen_graph_toroidal_lattice_barbell(10, 10, 10)
-
-
 
 
 #Detour graph removed since at large scale we predict similar results to complete graph

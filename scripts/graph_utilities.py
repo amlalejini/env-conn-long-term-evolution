@@ -100,6 +100,10 @@ def write_undirected_graph_to_matrix(fname:str, graph:nx.Graph):
     with open(fname, "w") as fp:
         fp.write(file_content)
 
+# Write networkx graph out as space-separated adjacency list
+def write_undirected_graph_to_adj_list(fname:str, graph:nx.Graph):
+    nx.write_adjlist(graph, fname)
+
 def write_node_info(output_path:str, graph:nx.Graph):
     # Collect node fields
     all_node_fields = set()
