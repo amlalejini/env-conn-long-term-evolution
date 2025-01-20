@@ -9,9 +9,10 @@
 
 ########## Command Lines to Run ##########
 
+SLURM_ARRAY_I=$((SLURM_ARRAY_TASK_ID - 1)) # 0-index the array id
+
 # Determine base seed
 JOB_SEED_OFFSET=<<JOB_SEED_OFFSET>>
-BASE_SEED=$((JOB_SEED_OFFSET + SLURM_ARRAY_TASK_ID - 1))
 
 # Variables for convenience
 EXEC=<<EXEC>>
@@ -28,7 +29,6 @@ BASE_RUN_DIR=<<BASE_RUN_DIR>>
 CONDITION_ID=<<CONDITION_ID>>
 
 # Calculate number of runs for this job
-SLURM_ARRAY_I=$((SLURM_ARRAY_TASK_ID - 1)) # 0-index the array id
 NUM_RUNS_PER_JOB=<<NUM_RUNS_PER_JOB>>
 TOTAL_REPLICATES=<<TOTAL_REPLICATES>>
 RUNS_COVERED=$((SLURM_ARRAY_I*NUM_RUNS_PER_JOB))
@@ -40,7 +40,7 @@ for ((i=0; i<$NUM_RUNS; i++)); do
   echo "===== Starting next run, $i ====="
   # Calculate seed for this run.
   RUN_ID=$(((SLURM_ARRAY_I*NUM_RUNS_PER_JOB) + i))
-  SEED=$((BASE_SEED + RUN_ID))
+  SEED=$((JOB_SEED_OFFSET + RUN_ID))
   # Make run directory
   RUN_DIR=${BASE_RUN_DIR}/RUN_${CONDITION_ID}_${SEED}
   mkdir -p ${RUN_DIR}
