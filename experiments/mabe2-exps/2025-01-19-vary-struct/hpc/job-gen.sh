@@ -9,7 +9,7 @@ PROJECT_NAME=env-conn-long-term-evolution
 JOBS_PER_SUBDIR=950
 RUNS_PER_JOB=5
 
-REPO_DIR=/Users/lalejina/devo_ws/${PROJECT_NAME}
+REPO_DIR=/mnt/home/lalejini/devo_ws/${PROJECT_NAME}
 REPO_SCRIPTS_DIR=${REPO_DIR}/scripts
 HOME_EXP_DIR=${REPO_DIR}/experiments/mabe2-exps/${EXP_SLUG}
 GRAPHS_DIR=${HOME_EXP_DIR}/hpc/spatial-structs

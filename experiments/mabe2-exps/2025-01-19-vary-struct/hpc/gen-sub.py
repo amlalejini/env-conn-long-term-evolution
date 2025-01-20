@@ -32,7 +32,7 @@ default_base_slurm_script_fpath = "./base_slurm_script.txt"
 combos = CombinationCollector()
 
 fixed_params_direct = {
-    "num_gens": "100000",
+    "num_gens": "1000",
     "eval_ifg.mut_prob": "0.0125",
 
 }
@@ -176,7 +176,52 @@ def main():
         else:
             slurm_str = slurm_str.replace("<<ACCOUNT_INFO>>", f"#SBATCH --account {args.hpc_account}")
 
+        ###################################################################
+        # Build commands to copy necessary configuration
+        ###################################################################
+        # executable copied in template slurm script.
+        # Need to copy: spatial structure, landscape
+        # RUN_ID
+        cond_spatial_struct = condition_info["spatial_structure__DYNAMIC"]
+        cond_spatial_struct_files = struct_files[cond_spatial_struct]
+        if len(cond_spatial_struct_files) == 1:
+            graph_file_name = cond_spatial_struct_files[-1]
+        else:
+            graph_file_name = cond_spatial_struct + "_" + "${RUN_ID}.txt"
+        graph_file_path = "${SPATIAL_STRUCT_DIR}/" + graph_file_name
 
+        config_cp_cmds = []
+        config_cp_cmds.append("cp ${CONFIG_DIR}/*.mabe .")
+        # TODO - copy landscape configuration (for now, temporary)
+        config_cp_cmds.append("cp ${CONFIG_DIR}/*.txt .")
+
+        slurm_str = slurm_str.replace("<<CONFIG_CP_CMDS>>", "\n  ".join(config_cp_cmds))
+
+        ###################################################################
+        # Build run commands
+        ###################################################################
+        cmd_line_params = {param:fixed_params_direct[param] for param in fixed_params_direct}
+        for param in condition_info:
+            # if "__DYNAMIC" in param or "__COPY_OVER" in param:
+            if any([dec in param for dec in special_decorators]):
+                continue
+            cmd_line_params[param] = condition_info[param]
+
+        run_cmds = []
+        mabe_args = "-f exp_main.mabe -s random_seed=${SEED} "
+        mabe_args += f"-s adj_placement.adj_filename=\\\"{graph_file_path}\\\" "
+        mabe_args += f"-s eval_ifg.graph_filename=\\\"eval_ifg_graph.txt\\\" "
+        mabe_args += " ".join([f"-s {param} {cmd_line_params[param]}" for param in cmd_line_params])
+        run_cmds.append(f'RUN_PARAMS="{mabe_args}"')
+        run_cmds.append('echo "./${EXEC} ${RUN_PARAMS}" > cmd.log')
+        run_cmds.append('./${EXEC} ${RUN_PARAMS} > run.log')
+        slurm_str = slurm_str.replace("<<RUN_CMDS>>", "\n  ".join(run_cmds))
+
+        ###################################################################
+        # Build analysis commands 
+        ###################################################################
+        # For now, nothing necessary.
+        slurm_str = slurm_str.replace("<<ANALYSIS_CMDS>>", "")
 
         ###################################################################
         # Write job submission file (if any of the array ids are active)
