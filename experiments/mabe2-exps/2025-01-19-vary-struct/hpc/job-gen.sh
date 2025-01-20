@@ -17,8 +17,8 @@ GRAPHS_CFG=${HOME_EXP_DIR}/hpc/graphs.json
 PARAM_SNAPSHOT_DIR=${HOME_EXP_DIR}/hpc/param_snapshots
 BASE_SLURM_FILE=${HOME_EXP_DIR}/hpc/base_slurm_script.txt
 
-DATA_DIR=${HOME_EXP_DIR}/hpc/test/data
-JOB_DIR=${HOME_EXP_DIR}/hpc/test/jobs
+DATA_DIR=/mnt/scratch/lalejini/data/${PROJECT_NAME}/${EXP_SLUG}
+JOB_DIR=${DATA_DIR}/jobs
 CONFIG_DIR=${HOME_EXP_DIR}/hpc/config
 
 # (1) Activate appropriate Python virtual environment
