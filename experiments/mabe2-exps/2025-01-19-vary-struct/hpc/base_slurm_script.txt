@@ -21,7 +21,7 @@ SPATIAL_STRUCT_DIR=<<SPATIAL_STRUCT_DIR>>
 PARAM_SNAPSHOT_DIR=<<PARAM_SNAPSHOT_DIR>>
 
 # Load correct environment variables, modules, etc.
-source ${REPO_DIR}/hpc-env/lalejini-clipper-env.sh
+source ${REPO_DIR}/hpc-env/lalejini-hpc-env.sh
 
 # BASE_RUN_DIR should be directory to hold all run directories.
 BASE_RUN_DIR=<<BASE_RUN_DIR>>
