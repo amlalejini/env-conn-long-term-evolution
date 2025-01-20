@@ -211,7 +211,7 @@ def main():
         mabe_args = "-f exp_main.mabe -s random_seed=${SEED} "
         mabe_args += f"-s adj_placement.adj_filename=\\\"{graph_file_path}\\\" "
         mabe_args += f"-s eval_ifg.graph_filename=\\\"eval_ifg_graph.txt\\\" "
-        mabe_args += " ".join([f"-s {param} {cmd_line_params[param]}" for param in cmd_line_params])
+        mabe_args += " ".join([f"-s {param}={cmd_line_params[param]}" for param in cmd_line_params])
         run_cmds.append(f'RUN_PARAMS="{mabe_args}"')
         run_cmds.append('echo "./${EXEC} ${RUN_PARAMS}" > cmd.log')
         run_cmds.append('./${EXEC} ${RUN_PARAMS} > run.log')
