@@ -18,7 +18,7 @@ GRAPHS_CFG=${HOME_EXP_DIR}/hpc/graphs.json
 EVENTS_DIR=${HOME_EXP_DIR}/hpc/events
 PARAM_SNAPSHOT_DIR=${HOME_EXP_DIR}/hpc/param_snapshots
 
-DATA_DIR=/mnt/projects/${USERNAME}_project/data/${PROJECT_NAME}/${EXP_SLUG}
+DATA_DIR=/mnt/projects/${USERNAME}_project/${PROJECT_NAME}/${EXP_SLUG}
 JOB_DIR=${DATA_DIR}/jobs
 CONFIG_DIR=${HOME_EXP_DIR}/hpc/config
 
