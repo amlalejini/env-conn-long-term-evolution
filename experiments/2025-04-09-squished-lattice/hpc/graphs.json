@@ -1,0 +1,38 @@
+{
+  "graphs-to-generate": [
+    {
+      "graph": "cycle",
+      "params": {"nodes": 3600}
+    },
+    {
+      "graph": "toroidal-lattice",
+      "params": {"graph_width": 60, "graph_height":60},
+      "output_id": "toroidal-lattice_60x60"
+    },
+    {
+      "graph": "toroidal-lattice",
+      "params": {"graph_width": 30, "graph_height":120},
+      "output_id": "toroidal-lattice_30x120"
+    },
+    {
+      "graph": "toroidal-lattice",
+      "params": {"graph_width": 15, "graph_height":240},
+      "output_id": "toroidal-lattice_15x240"
+    },
+    {
+      "graph": "toroidal-lattice",
+      "params": {"graph_width": 4, "graph_height":900},
+      "output_id": "toroidal-lattice_4x900"
+    },
+    {
+      "graph": "toroidal-lattice",
+      "params": {"graph_width": 3, "graph_height":1200},
+      "output_id": "toroidal-lattice_3x1200"
+    },
+    {
+      "graph": "toroidal-lattice",
+      "params": {"graph_width": 2, "graph_height":1800},
+      "output_id": "toroidal-lattice_2x1800"
+    }
+  ]
+}
