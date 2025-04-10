@@ -1,10 +1,13 @@
 [submodule "third-party/avida-empirical"]
 	path = third-party/avida-empirical
 	url = https://github.com/amlalejini/avida-empirical.git
-	branch = 2024-env-conn
+	branch = 2025-env-conn
 [submodule "network_correlation"]
 	path = third-party/network_correlation
 	url = https://github.com/rudyarthur/network_correlation.git
 [submodule "MABE2"]
 	path = third-party/MABE2
 	url = https://github.com/FergusonAJ/MABE2.git
+[submodule "evo_spatial_discoveries"]
+	path = third-party/evo_spatial_discoveries
+	url = https://github.com/FergusonAJ/evo_spatial_discoveries.git
