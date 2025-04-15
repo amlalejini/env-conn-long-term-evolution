@@ -91,6 +91,35 @@ def read_avida_dat_file(path, backfill_missing_fields=False):
         data.append({field:value for field,value in zip(fields, data_line)})
     return data
 
+def read_avida_task_grid(filename, num_tasks=77):
+    '''
+    Reads avida task grid file.
+    Returns two-dimentional
+    '''
+    lines = []
+    with open(filename, "r") as fp:
+        content = fp.read().strip()
+        lines = [list(map(int, line.strip().split(" "))) for line in content.split("\n")]
+    grid_info = {}
+    id = 0
+    for y in range(len(lines)):
+        line = lines[y]
+        for x in range(len(line)):
+            task_value = line[x]
+            task_profile = ''.join(
+                reversed(
+                    [str((task_value >> i) & 1) for i in range(num_tasks)]
+                )
+            )
+            grid_info[id] = {
+                "loc_x": x,
+                "loc_y": y,
+                "loc_id": id,
+                "tasks_int": task_value,
+                "task_profile": task_profile
+            }
+            id += 1
+    return grid_info
 
 def filter_time_points(all_points, method, resolution):
     if method == "total":
