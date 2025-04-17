@@ -43,6 +43,20 @@ def write_csv(output_path:str, rows:list):
         fp.write(",".join(header) + "\n")
         fp.write("\n".join(lines))
 
+def write_task_grid_data(
+    output_path:str,
+    task_grid_data:dict
+):
+    # Take task_grid_data in format given by read_avida_task_grid
+    # function. Write out location id, task_profile
+    content = [
+        {
+            "loc_id": info["loc_id"],
+            "task_profile": info["task_profile"]
+        } for info in task_grid_data
+    ]
+    write_csv(output_path, content)
+
 def read_avida_dat_file(path, backfill_missing_fields=False):
     content = None
     with open(path, "r") as fp:
