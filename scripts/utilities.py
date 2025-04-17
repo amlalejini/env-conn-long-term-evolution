@@ -51,9 +51,9 @@ def write_task_grid_data(
     # function. Write out location id, task_profile
     content = [
         {
-            "loc_id": info["loc_id"],
-            "task_profile": info["task_profile"]
-        } for info in task_grid_data
+            "loc_id": task_grid_data[id]["loc_id"],
+            "task_profile": task_grid_data[id]["task_profile"]
+        } for id in task_grid_data
     ]
     write_csv(output_path, content)
 

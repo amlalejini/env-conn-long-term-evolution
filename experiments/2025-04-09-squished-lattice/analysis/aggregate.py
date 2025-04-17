@@ -446,7 +446,8 @@ def main():
         )
         # Add shannon entropy of tasks to summary info
         task_profiles = {}
-        for info in task_grid_data:
+        for id in task_grid_data:
+            info = task_grid_data[id]
             prof = info["task_profile"]
             if prof not in task_profiles:
                 task_profiles[prof] = 0
