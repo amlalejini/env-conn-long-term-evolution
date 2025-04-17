@@ -273,15 +273,15 @@ def main():
         ########################################
         dominant_path = os.path.join(run_path, "data", "dominant.csv")
         dominant_data = utils.read_csv(dominant_path)
-
-        run_summary_info.update(
-            extract_summary_data(
-                data = dominant_data,
-                target_update = run_target_update,
-                fields = dominant_fields_summary,
-                prefix = "dominant"
+        if len(dominant_data) > 0:
+            run_summary_info.update(
+                extract_summary_data(
+                    data = dominant_data,
+                    target_update = run_target_update,
+                    fields = dominant_fields_summary,
+                    prefix = "dominant"
+                )
             )
-        )
 
         del dominant_data
 
