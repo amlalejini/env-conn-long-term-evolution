@@ -435,6 +435,7 @@ def main():
         ########################################
         grid_task_path = os.path.join(run_path, "data", f"grid_task.{target_update}.dat")
         task_grid_data = utils.read_avida_task_grid(grid_task_path, num_tasks = len(tasks))
+        utils.mkdir_p(os.path.join(dump_dir, "task_grids"))
         # Dump mapping from task grid to task profile
         utils.write_task_grid_data(
             os.path.join(
