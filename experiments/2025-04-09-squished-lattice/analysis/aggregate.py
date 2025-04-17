@@ -299,7 +299,7 @@ def main():
                 f"task_loc_{task_name}_loc_id": line["loc_id"],
                 f"task_loc_{task_name}_loc_x": line["loc_x"],
                 f"task_loc_{task_name}_loc_y": line["loc_y"],
-                f"task_loc_{task_name}_update": line["update"],
+                f"task_loc_{task_name}_update": line["update"]
             })
         run_summary_info.update(first_task_loc_info)
 
@@ -440,7 +440,7 @@ def main():
             os.path.join(
                 dump_dir,
                 "task_grids",
-                f"task_loc_info_{run_summary_info["seed"]}.csv"
+                f"task_loc_info_{run_summary_info['seed']}.csv"
             ),
             task_grid_data
         )
