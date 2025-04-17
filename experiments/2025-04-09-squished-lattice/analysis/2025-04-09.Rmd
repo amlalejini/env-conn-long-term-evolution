@@ -277,6 +277,89 @@ ggsave(
 # )
 ```
 
+## Task profile entropy
+
+```{r}
+task_profile_entropy_plt <- ggplot(
+    data = data,
+    mapping = aes(
+      x = graph_type,
+      y = task_profile_entropy,
+      fill = graph_type
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/task_profile_entropy.pdf"),
+  plot = task_profile_entropy_plt,
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+task_profile_count_plt <- ggplot(
+    data = data,
+    mapping = aes(
+      x = graph_type,
+      y = task_profile_count,
+      fill = graph_type
+    )
+  ) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/task_profile_count.pdf"),
+  plot = task_profile_count_plt,
+  width = 15,
+  height = 10
+)
+```
+
+
 ## MRCA Changes
 
 ```{r}
