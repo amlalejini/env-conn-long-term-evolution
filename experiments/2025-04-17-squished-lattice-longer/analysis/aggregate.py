@@ -434,29 +434,32 @@ def main():
         # Extract data from task grid
         ########################################
         grid_task_path = os.path.join(run_path, "data", f"grid_task.{target_update}.dat")
-        task_grid_data = utils.read_avida_task_grid(grid_task_path, num_tasks = len(tasks))
-        utils.mkdir_p(os.path.join(dump_dir, "task_grids"))
-        # Dump mapping from task grid to task profile
-        utils.write_task_grid_data(
-            os.path.join(
-                dump_dir,
-                "task_grids",
-                f"task_loc_info_{run_summary_info['seed']}.csv"
-            ),
-            task_grid_data
-        )
-        # Add shannon entropy of tasks to summary info
-        task_profiles = {}
-        for id in task_grid_data:
-            info = task_grid_data[id]
-            prof = info["task_profile"]
-            if prof not in task_profiles:
-                task_profiles[prof] = 0
-            task_profiles[prof] += 1
-        prob_dist = [task_profiles[prof] / len(task_grid_data) for prof in task_profiles]
-        run_summary_info["task_profile_entropy"] = entropy(prob_dist, base=2)
-        run_summary_info["task_profile_count"] = len(task_profiles)
-
+        if run_finished_target:
+            task_grid_data = utils.read_avida_task_grid(grid_task_path, num_tasks = len(tasks))
+            utils.mkdir_p(os.path.join(dump_dir, "task_grids"))
+            # Dump mapping from task grid to task profile
+            utils.write_task_grid_data(
+                os.path.join(
+                    dump_dir,
+                    "task_grids",
+                    f"task_loc_info_{run_summary_info['seed']}.csv"
+                ),
+                task_grid_data
+            )
+            # Add shannon entropy of tasks to summary info
+            task_profiles = {}
+            for id in task_grid_data:
+                info = task_grid_data[id]
+                prof = info["task_profile"]
+                if prof not in task_profiles:
+                    task_profiles[prof] = 0
+                task_profiles[prof] += 1
+            prob_dist = [task_profiles[prof] / len(task_grid_data) for prof in task_profiles]
+            run_summary_info["task_profile_entropy"] = entropy(prob_dist, base=2)
+            run_summary_info["task_profile_count"] = len(task_profiles)
+        else:
+            run_summary_info["task_profile_entropy"] = -1
+            run_summary_info["task_profile_count"] = -1
 
         ########################################
         # Add summary info to summary content lines
