@@ -67,6 +67,7 @@ fixed_params_direct = {
     "OEE_RES": "0",
     "TRACK_INDIVIDUALS": "1",
     "EMP_PHYLO_STORE_ANCESTORS": "0",
+    "EMP_PHYLO": "0",
     "ALLOW_PARENT": "0",
     "SLICING_METHOD": slicing_method_modes["constant"]
 }
