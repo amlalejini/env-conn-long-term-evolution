@@ -292,16 +292,17 @@ def main():
         # Build events commands
         cond_spatial_struct = condition_info["spatial_structure__DYNAMIC"]
         # Configure birth method based on chosen spatial structure
-        if cond_spatial_struct == "well-mixed":
-            cmd_line_params["BIRTH_METHOD"] = birth_method_modes["well-mixed"]
-        else:
-            cmd_line_params["BIRTH_METHOD"] = birth_method_modes["oldest/merit-neighborhood"]
+        # if cond_spatial_struct == "well-mixed":
+        #     cmd_line_params["BIRTH_METHOD"] = birth_method_modes["well-mixed"]
+        # else:
+        #     cmd_line_params["BIRTH_METHOD"] = birth_method_modes["oldest/merit-neighborhood"]
+        cmd_line_params["BIRTH_METHOD"] = birth_method_modes["oldest/merit-neighborhood"]
 
         cond_struct_files = struct_files[cond_spatial_struct]
         multiple_graphs_for_cond = False
-        if (cond_spatial_struct in {"well-mixed", "toroidal-lattice"}):
-            cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
-        elif len(cond_struct_files) <= 1:
+        # if (cond_spatial_struct in {"well-mixed", "toroidal-lattice"}):
+        #     cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
+        if len(cond_struct_files) <= 1:
             cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
         else:
             cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}_" + "${RUN_ID}.cfg"
@@ -314,14 +315,14 @@ def main():
         event_file_name = "unknown"
         rep_events_str = ""
         graph_file_name = ""
-        if (cond_spatial_struct in {"well-mixed", "toroidal-lattice"}):
-            # Relying on base avida functionality to implement spatial structure
-            # No spatial structure configuration events necessary.
-            event_file_name = cmd_line_params["EVENT_FILE"]
-            rep_events_str = base_events_content.replace("<<CFG_SPATIAL_STRUCT_CMDS>>", "")
-            with open(os.path.join(events_dir, event_file_name), "w") as fp:
-                fp.write(rep_events_str)
-        elif not multiple_graphs_for_cond:
+        # if (cond_spatial_struct in {"well-mixed", "toroidal-lattice"}):
+        #     # Relying on base avida functionality to implement spatial structure
+        #     # No spatial structure configuration events necessary.
+        #     event_file_name = cmd_line_params["EVENT_FILE"]
+        #     rep_events_str = base_events_content.replace("<<CFG_SPATIAL_STRUCT_CMDS>>", "")
+        #     with open(os.path.join(events_dir, event_file_name), "w") as fp:
+        #         fp.write(rep_events_str)
+        if not multiple_graphs_for_cond:
             # Need to setup ReconfigureCellConnectivity command, and
             # all replicates share the same event file.
             graph_file_name = cond_struct_files[-1]
