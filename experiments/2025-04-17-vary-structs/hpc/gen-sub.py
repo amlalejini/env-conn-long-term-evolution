@@ -92,7 +92,8 @@ combos.add_val(
         "clique-ring",
         "toroidal-lattice",
         "well-mixed",
-        "wheel"
+        "wheel",
+        "windmill"
     ]
 )
 

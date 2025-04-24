@@ -58,6 +58,11 @@
       "params": {
         "nodes": 3600
       }
+    },
+    {
+      "graph": "windmill",
+      "params": {"cliques": 60, "clique_size": 59, "increase_size_to": 3600},
+      "output_id": "windmill"
     }
   ]
 }
