@@ -1,0 +1,24 @@
+#!/bin/bash
+########## Define Resources Needed with SBATCH Lines ##########
+
+#SBATCH --time=04:00:00          # limit of wall clock time - how long the job will run (same as -t)
+#SBATCH --mem=4gb
+#SBATCH --job-name=agg         # you can give your job a name for easier identification (same as -J)
+
+########## Command Lines to Run ##########
+
+USERNAME=lalejina
+EXP_SLUG=2025-04-17-vary-structs
+PROJECT_NAME=env-conn-long-term-evolution
+
+REPO_DIR=/mnt/home/${USERNAME}/devo_ws/${PROJECT_NAME}
+REPO_SCRIPTS_DIR=${REPO_DIR}/scripts
+
+# Load correct environment variables, modules, etc.
+source ${REPO_DIR}/hpc-env/clipper-hpc-env.sh
+
+# Go to correct analysis directory
+cd ${REPO_DIR}/experiments/${EXP_SLUG}/analysis
+
+# Run aggregate script
+./agg.sh
