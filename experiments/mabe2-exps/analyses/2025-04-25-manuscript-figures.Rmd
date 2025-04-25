@@ -1,0 +1,484 @@
+# Manuscript figures
+
+## Analysis setup
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+library(kableExtra)
+library(boot)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+varied_graph_experiment_slug <- "analysis_of_exploratory_data"
+varied_graph_working_directory <- paste(
+  "third-party",
+  "evo_spatial_discoveries",
+  "experiments",
+  varied_graph_experiment_slug,
+  sep = "/"
+)
+
+toroid_graph_experiment_slug <- "analysis_of_exploratory_toroid_data"
+toroid_graph_working_directory <- paste(
+  "third-party",
+  "evo_spatial_discoveries",
+  "experiments",
+  toroid_graph_experiment_slug,
+  sep = "/"
+)
+
+plt_dump_dir <- paste(
+  "experiments",
+  "mabe2-exps",
+  "analyses",
+  "plots",
+  sep = "/"
+)
+```
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_dir <- plt_dump_dir
+
+dir.create(
+  plot_dir,
+  showWarnings = FALSE
+)
+```
+
+## Load data
+
+General parameters
+
+```{r}
+max_generation <- 100000
+```
+
+Load varied graph max organism data
+
+```{r}
+varied_graph_max_org_data_path <- paste(
+  varied_graph_working_directory,
+  "data",
+  "combined_max_org_data.csv",
+  sep = "/"
+)
+# Data file has time series
+varied_graph_max_org_data_ts <- read_csv(varied_graph_max_org_data_path)
+varied_graph_max_org_data_ts <- varied_graph_max_org_data_ts %>%
+  mutate(
+    landscape = as.factor(landscape),
+    structure = as.factor(structure),
+    experiment_set = "varied-graph"
+  ) %>%
+  mutate(
+    valleys_crossed = case_when(
+      landscape == "Valley crossing" ~ round(log(fitness, base = 1.5)),
+      .default = 0
+    )
+  )
+# Get tibble with just final generation
+varied_graph_max_org_data <- varied_graph_max_org_data_ts %>%
+  filter(generation == max_generation)
+```
+
+Load toroid max organism data
+
+```{r}
+toroid_graph_max_org_data_path <- paste(
+  toroid_graph_working_directory,
+  "data",
+  "combined_max_org_data.csv",
+  sep = "/"
+)
+
+# Data file has time series
+toroid_graph_max_org_data_ts <- read_csv(toroid_graph_max_org_data_path)
+toroid_graph_max_org_data_ts <- toroid_graph_max_org_data_ts %>%
+  mutate(
+    landscape = as.factor(landscape),
+    structure = as.factor(structure),
+    experiment_set = "squished-toroid"
+  ) %>%
+  mutate(
+    valleys_crossed = case_when(
+      landscape == "Valley crossing" ~ round(log(fitness, base = 1.5)),
+      .default = 0
+    )
+  )
+# Get tibble with just final generation
+toroid_graph_max_org_data <- toroid_graph_max_org_data_ts %>%
+  filter(generation == max_generation)
+```
+
+Combine toroid and varied graph data into single data frame.
+
+```{r}
+max_org_data_ts <- full_join(
+  varied_graph_max_org_data_ts,
+  toroid_graph_max_org_data_ts
+)
+max_org_data_ts <- max_org_data_ts %>%
+  mutate(
+    experiment_set = as.factor(experiment_set)
+  )
+
+structure_label_map <- list(
+  "1_3600" = "1x3600",
+  "15_240" = "15x240",
+  "2_1800" = "2x1800",
+  "3_1200" = "3x1200",
+  "30_120" = "30x120",
+  "4_900" = "4x900",
+  "60_60" = "60x60",
+  "well_mixed" = "Well-mixed",
+  "comet_kite" = "Comet-kite",
+  "windmill" = "Windmill",
+  "clique_ring" = "Clique ring",
+  "cycle" = "Cycle",
+  "linear_chain" = "Linear chain",
+  "lattice" = "Lattice",
+  "random_waxman" = "Random Waxman",
+  "star" = "Star",
+  "wheel" = "Wheel"
+)
+toroid_exp_structs <- c(
+  "1x3600",
+  "15x240",
+  "2x1800",
+  "3x1200",
+  "30x120",
+  "4x900",
+  "60x60"
+)
+varied_graph_exp_structs <- c(
+  "Well-mixed",
+  "Comet-kite",
+  "Windmill",
+  "Clique ring",
+  "Cycle",
+  "Linear chain",
+  "Lattice",
+  "Random Waxman",
+  "Star",
+  "Wheel"
+)
+
+structure_levels <- c(
+  "1_3600",
+  "2_1800",
+  "3_1200",
+  "4_900",
+  "15_240",
+  "30_120",
+  "60_60",
+  "well_mixed",
+  "comet_kite",
+  "windmill",
+  "clique_ring",
+  "cycle",
+  "linear_chain",
+  "lattice",
+  "random_waxman",
+  "star",
+  "wheel"
+)
+
+structure_labels <- c()
+for (struct_id in structure_levels) {
+  structure_labels <- append(structure_labels, structure_label_map[[struct_id]])
+}
+
+max_org_data_ts <- max_org_data_ts %>%
+  mutate(
+    structure = factor(
+      structure,
+      levels = structure_levels,
+      labels = structure_labels
+    )
+  )
+# Get tibble with just final generation
+max_org_data <- max_org_data_ts %>%
+  filter(generation == max_generation)
+```
+
+Check that replicate count for each condition matches expectations.
+
+```{r}
+run_summary <- max_org_data %>%
+  group_by(experiment_set, landscape, structure) %>%
+  summarize(
+    n = n()
+  )
+print(run_summary, n = 60)
+```
+
+Calculate time to max fitness for single-gradient landscape.
+
+```{r}
+# Find all rows with maximum fitness value, then get row with minimum generation,
+#  then project out expected generation to max (for runs that didn't finish)
+max_possible_fit = 50
+time_to_max_single_gradient <- max_org_data_ts %>%
+  filter(landscape == "Single gradient") %>%
+  group_by(rep, structure, experiment_set) %>%
+  slice_max(
+    fitness,
+    n = 1
+  ) %>%
+  slice_min(
+    generation,
+    n = 1
+  ) %>%
+  mutate(
+    proj_gen_max = (max_possible_fit / fitness) * generation
+  )
+```
+
+Calculate bootstrapped 99% confidence intervals for projected generation to maximum
+fitness for single-gradient runs.
+
+```{r}
+# Define sample mean function
+samplemean <- function(x, d) {
+  return(mean(x[d]))
+}
+
+summary_gen_to_max <- tibble(
+  experiment_set = character(),
+  structure = character(),
+  proj_gen_max_mean = double(),
+  proj_gen_max_mean_ci_low = double(),
+  proj_gen_max_mean_ci_high = double()
+)
+structures <- levels(time_to_max_single_gradient$structure)
+experiment_sets <- levels(time_to_max_single_gradient$experiment_set)
+for (exp_set in experiment_sets) {
+  # cat("--------", exp_set, "--------")
+  for (struct in structures) {
+    # print(struct)
+    s_data <- filter(
+      time_to_max_single_gradient,
+      (structure == struct) & (experiment_set == exp_set)
+    )$proj_gen_max
+    if (length(s_data) == 0) {
+      next
+    }
+    boot_result <- boot(
+      s_data,
+      statistic = samplemean,
+      R = 10000
+    )
+    result_ci <- boot.ci(boot_result, conf = 0.99, type = "perc")
+    m <- result_ci$t0
+    low <- result_ci$percent[4]
+    high <- result_ci$percent[5]
+
+    summary_gen_to_max <- summary_gen_to_max %>%
+      add_row(
+        experiment_set = exp_set,
+        structure = struct,
+        proj_gen_max_mean = m,
+        proj_gen_max_mean_ci_low = low,
+        proj_gen_max_mean_ci_high = high
+      )
+  }
+}
+summary_gen_to_max <- summary_gen_to_max %>%
+  mutate(
+    experiment_set = as.factor(experiment_set),
+    structure = factor(
+      structure,
+      levels = structure_labels
+    )
+  )
+```
+
+## Varied graph type experiment set
+
+### Smooth gradient - Time to maximum fitness
+
+```{r}
+
+# Identify median for well-mixed
+wm_median <- median(
+  filter(
+    time_to_max_single_gradient,
+    (structure == "Well-mixed") & (experiment_set == "varied-graph")
+  )$proj_gen_max
+)
+
+vg_clr_pal <- scale_color_discreterainbow()$palette(
+  length(varied_graph_exp_structs)
+)
+
+# color("discreterainbow")(length(varied_graph_exp_structs))
+wm_color <- vg_clr_pal[1]
+
+vg_smooth_grad_time_to_max_plt <- summary_gen_to_max %>%
+  filter(experiment_set == "varied-graph") %>%
+  ggplot(
+    mapping = aes(
+      x = structure,
+      y = proj_gen_max_mean,
+      fill = structure,
+      color = structure
+    )
+  ) +
+  # geom_point() +
+  geom_col() +
+  geom_linerange(
+    aes(
+      ymin = proj_gen_max_mean_ci_low,
+      ymax = proj_gen_max_mean_ci_high
+    ),
+    color = "black",
+    linewidth = 0.75,
+    lineend = "round"
+  ) +
+  geom_hline(
+    yintercept = max_generation,
+    linetype = "dashed",
+    linewidth = 1,
+    color = "grey"
+  ) +
+  geom_hline(
+    yintercept = wm_median,
+    linetype = "dotted",
+    color = wm_color,
+    linewidth = 1
+  ) +
+  scale_x_discrete(
+    breaks = rev(varied_graph_exp_structs),
+    limits = rev(varied_graph_exp_structs)
+  ) +
+  scale_color_manual(
+    values = vg_clr_pal
+  ) +
+  scale_fill_manual(
+    values = vg_clr_pal
+  ) +
+  # scale_color_discreterainbow(
+  #   breaks = varied_graph_exp_structs
+  # ) +
+  # scale_fill_discreterainbow(
+  #   breaks = varied_graph_exp_structs
+  # ) +
+  coord_flip() +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+vg_smooth_grad_time_to_max_plt
+```
+
+### Multi-path exploration - Maximum fitness
+
+```{r}
+vg_multipath_fitness_plt <- max_org_data %>%
+  filter(experiment_set == "varied-graph" & landscape == "Multipath") %>%
+  mutate(
+    structure = factor(
+      structure,
+      levels = varied_graph_exp_structs,
+      labels = varied_graph_exp_structs
+    )
+  ) %>%
+  ggplot(
+    mapping = aes(
+      x = structure,
+      y = fitness,
+      fill = structure
+    )
+  ) +
+  geom_point(
+    mapping = aes(color = structure),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .3,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_color_manual(
+    values = vg_clr_pal
+  ) +
+  scale_fill_manual(
+    values = vg_clr_pal
+  ) +
+  scale_x_discrete(
+    limits = varied_graph_exp_structs
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+vg_multipath_fitness_plt
+```
+
+### Valley crossing - Valleys crossed
+
+```{r}
+
+vg_valleys_plt <- max_org_data %>%
+  filter(experiment_set == "varied-graph" & landscape == "Valley crossing") %>%
+  mutate(
+    structure = factor(
+      structure,
+      levels = varied_graph_exp_structs,
+      labels = varied_graph_exp_structs
+    )
+  ) %>%
+  ggplot(
+    mapping = aes(
+      x = structure,
+      y = valleys_crossed,
+      fill = structure
+    )
+  ) +
+  geom_point(
+    mapping = aes(color = structure),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .3,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_color_manual(
+    values = vg_clr_pal
+  ) +
+  scale_fill_manual(
+    values = vg_clr_pal
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+vg_valleys_plt
+```
+
+## Squished toroid experiment set
+
+## Combined figures
