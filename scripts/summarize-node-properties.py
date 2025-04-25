@@ -58,7 +58,7 @@ def calc_graph_summary_properties(graph):
     # properties["avg_clustering"] = nx.average_clustering(graph)
     properties["num_connected_components"] = nx.number_connected_components(graph)
     # properties["num_articulation_points"] = len(list(nx.articulation_points(graph)))
-    properties["avg_node_connectivity"] = nx.average_node_connectivity(graph)
+    # properties["avg_node_connectivity"] = nx.average_node_connectivity(graph)
     properties["edge_connectivity"] = nx.edge_connectivity(graph)
     properties["node_connectivity"] = nx.node_connectivity(graph)
     print("  connectivity done")
