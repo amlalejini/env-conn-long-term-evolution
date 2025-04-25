@@ -120,11 +120,15 @@ def read_avida_task_grid(filename, num_tasks=77):
         line = lines[y]
         for x in range(len(line)):
             task_value = line[x]
-            task_profile = ''.join(
-                reversed(
-                    [str((task_value >> i) & 1) for i in range(num_tasks)]
+            # -1 indicates "dead" location
+            if task_value == -1:
+                task_profile = ["0" for i in range(num_tasks)]
+            else:
+                task_profile = ''.join(
+                    reversed(
+                        [str((task_value >> i) & 1) for i in range(num_tasks)]
+                    )
                 )
-            )
             grid_info[id] = {
                 "loc_x": x,
                 "loc_y": y,

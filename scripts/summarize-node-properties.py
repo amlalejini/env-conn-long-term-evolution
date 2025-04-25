@@ -16,9 +16,9 @@ import statistics as stats
 
 # TODO - handle well-mixed and toroidal lattice separately
 exclude_graphs = {
-    "clique-ring_",
-    "comet-kite_",
-    "well-mixed"
+    # "clique-ring_",
+    # "comet-kite_",
+    # "well-mixed"
 }
 
 
@@ -36,6 +36,40 @@ def task_name(in_name):
     else:
         return in_name
 
+def calc_graph_summary_properties(graph):
+    properties = {}
+    # Check connectivity
+    is_connected = nx.is_connected(graph)
+    # Density
+    properties["density"] = nx.density(graph)
+    # Degree (mean, median, variance)
+    node_degrees = [pair[1] for pair in nx.degree(graph)]
+    properties["degree_mean"] = stats.mean(node_degrees)
+    properties["degree_median"] = stats.median(node_degrees)
+    properties["degree_variance"] = stats.variance(node_degrees)
+    properties["girth"] = nx.girth(graph)
+    properties["degree_assortivity_coef"] = nx.degree_assortativity_coefficient(graph)
+    properties["num_bridges"] = len(list(nx.bridges(graph)))
+    properties["max_clique_size"] = len(nx.make_max_clique_graph(graph).nodes)
+    properties["transitivity"] = nx.transitivity(graph)
+    properties["avg_clustering"] = nx.average_clustering(graph)
+    properties["num_connected_components"] = nx.number_connected_components(graph)
+    properties["num_articulation_points"] = len(list(nx.articulation_points(graph)))
+    properties["avg_node_connectivity"] = nx.average_node_connectivity(graph)
+    properties["edge_connectivity"] = nx.edge_connectivity(graph)
+    properties["node_connectivity"] = nx.node_connectivity(graph)
+    properties["diameter"] = nx.diameter(graph) if is_connected else "error"
+    properties["radius"] = nx.radius(graph) if is_connected else "error"
+    properties["kemeny_constant"] = nx.kemeny_constant(graph) if is_connected else "error"
+    properties["global_efficiency"] = nx.global_efficiency(graph)
+    properties["wiener_index"] = nx.wiener_index(graph)
+
+    length_results = nx.all_pairs_shortest_path_length(graph)
+    max_short_path = max([max(focal_node[1].values()) for focal_node in length_results])
+    properties["longest_shortest_path"] = max_short_path
+    # properties["connectivity"] = nx.all_pairs_node_connectivity(graph)
+
+    return properties
 
 def main():
     parser = argparse.ArgumentParser(description="Screen for hotspots")
@@ -192,31 +226,35 @@ def main():
     # Load each graph, output properties
     ############################################################################
     graph_expected_births_info = {}
+    graph_summary_info = []
     for graph_file in graph_files:
         print(f"Graph file: {graph_file}")
-        if graph_file == "well-mixed": continue
+        # if graph_file == "well-mixed": continue
         graph_path = os.path.join(graphs_dir, graph_file)
         # Load graph
         # - If well-mixed or torroidal lattice generate directly
-        graph = None
-        if graph_file in ["toroidal-lattice", "torroidal-lattice"]:
-            graph = ggens.gen_graph_toroidal_lattice(world_x, world_y)
-        else:
-            graph = gutils.read_graph_matrix(graph_path)
+        # graph = None
+        # if graph_file in ["toroidal-lattice", "torroidal-lattice"]:
+        #     graph = ggens.gen_graph_toroidal_lattice(world_x, world_y)
+        # else:
+        graph = gutils.read_graph_matrix(graph_path)
 
         graph_expected_births_info[graph_file] = gutils.calc_expected_births(graph)
 
+        graph_summary_info.append(calc_graph_summary_properties(graph))
+
+
         node_properties = {
-            "percolation_centrality": nx.percolation_centrality(graph),
-            "harmonic_centrality": nx.harmonic_centrality(graph),
-            "subgraph_centrality": nx.subgraph_centrality(graph),
-            "eigenvector_centrality": nx.eigenvector_centrality(graph),
-            "load_centrality": nx.load_centrality(graph),
-            "second_order_centrality": nx.second_order_centrality(graph),
-            "triangles": nx.triangles(graph),
-            "closeness_centrality": nx.closeness_centrality(graph),
-            "information_centrality": nx.information_centrality(graph),
-            "clustering": nx.clustering(graph)
+            # "percolation_centrality": nx.percolation_centrality(graph),
+            # "harmonic_centrality": nx.harmonic_centrality(graph),
+            # "subgraph_centrality": nx.subgraph_centrality(graph),
+            # "eigenvector_centrality": nx.eigenvector_centrality(graph),
+            # "load_centrality": nx.load_centrality(graph),
+            # "second_order_centrality": nx.second_order_centrality(graph),
+            # "triangles": nx.triangles(graph),
+            # "closeness_centrality": nx.closeness_centrality(graph),
+            # "information_centrality": nx.information_centrality(graph),
+            # "clustering": nx.clustering(graph)
         }
 
         # Add attributes to graph nodes
@@ -247,6 +285,7 @@ def main():
         graph_output_fpath = os.path.join(dump_dir, graph_output_fname)
         gutils.write_node_info(graph_output_fpath, graph)
 
+        graph_summary_info[-1]["graph_name"] = graph_base_name
         # Draw graph
         # nx.draw(
         #     graph,
@@ -258,11 +297,7 @@ def main():
         # plt.show()
 
     # print(graph_expected_births_info)
-
-
-
-
-
+    utils.write_csv("graph_summary_properties.csv", graph_summary_info)
 
 
 if __name__ == "__main__":
