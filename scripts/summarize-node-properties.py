@@ -40,6 +40,7 @@ def calc_graph_summary_properties(graph):
     properties = {}
     # Check connectivity
     is_connected = nx.is_connected(graph)
+    print("  analyzing graph summary properties")
     # Density
     properties["density"] = nx.density(graph)
     # Degree (mean, median, variance)
@@ -47,26 +48,30 @@ def calc_graph_summary_properties(graph):
     properties["degree_mean"] = stats.mean(node_degrees)
     properties["degree_median"] = stats.median(node_degrees)
     properties["degree_variance"] = stats.variance(node_degrees)
+    print("  degree done")
     properties["girth"] = nx.girth(graph)
     properties["degree_assortivity_coef"] = nx.degree_assortativity_coefficient(graph)
     properties["num_bridges"] = len(list(nx.bridges(graph)))
-    properties["max_clique_size"] = len(nx.make_max_clique_graph(graph).nodes)
+    # properties["max_clique_size"] = len(nx.make_max_clique_graph(graph).nodes)
     properties["transitivity"] = nx.transitivity(graph)
-    properties["avg_clustering"] = nx.average_clustering(graph)
+    print("  transitivity done")
+    # properties["avg_clustering"] = nx.average_clustering(graph)
     properties["num_connected_components"] = nx.number_connected_components(graph)
-    properties["num_articulation_points"] = len(list(nx.articulation_points(graph)))
+    # properties["num_articulation_points"] = len(list(nx.articulation_points(graph)))
     properties["avg_node_connectivity"] = nx.average_node_connectivity(graph)
     properties["edge_connectivity"] = nx.edge_connectivity(graph)
     properties["node_connectivity"] = nx.node_connectivity(graph)
+    print("  connectivity done")
     properties["diameter"] = nx.diameter(graph) if is_connected else "error"
     properties["radius"] = nx.radius(graph) if is_connected else "error"
     properties["kemeny_constant"] = nx.kemeny_constant(graph) if is_connected else "error"
-    properties["global_efficiency"] = nx.global_efficiency(graph)
-    properties["wiener_index"] = nx.wiener_index(graph)
-
+    print("  kemeny constant done")
+    # properties["global_efficiency"] = nx.global_efficiency(graph)
+    # properties["wiener_index"] = nx.wiener_index(graph)
     length_results = nx.all_pairs_shortest_path_length(graph)
     max_short_path = max([max(focal_node[1].values()) for focal_node in length_results])
     properties["longest_shortest_path"] = max_short_path
+    print("  done analyzing graph summary properties")
     # properties["connectivity"] = nx.all_pairs_node_connectivity(graph)
 
     return properties
