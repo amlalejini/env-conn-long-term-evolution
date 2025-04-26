@@ -122,7 +122,7 @@ def read_avida_task_grid(filename, num_tasks=77):
             task_value = line[x]
             # -1 indicates "dead" location
             if task_value == -1:
-                task_profile = ["0" for i in range(num_tasks)]
+                task_profile = ''.join(["0" for i in range(num_tasks)])
             else:
                 task_profile = ''.join(
                     reversed(
