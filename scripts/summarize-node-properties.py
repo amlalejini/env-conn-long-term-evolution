@@ -214,7 +214,10 @@ def main():
             loc_info = actual_birth_locs[graph_file][loc]
             loc_info["total"] = sum(loc_info["counts"])
             loc_info["mean"] = stats.mean(loc_info["counts"])
-            loc_info["variance"] = stats.variance(loc_info["counts"])
+            if len(loc_info["counts"]) > 1:
+                loc_info["variance"] = stats.variance(loc_info["counts"])
+            else:
+                loc_info["variance"] = 0
             total_births += loc_info["total"]
         total_births_by_graph[graph_file] = total_births
     # Compute proportions
