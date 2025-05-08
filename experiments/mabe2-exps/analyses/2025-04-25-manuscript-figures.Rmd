@@ -369,12 +369,9 @@ vg_smooth_grad_time_to_max_plt <- summary_gen_to_max %>%
   ) +
   coord_flip() +
   theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
+    legend.position = "none"
   )
+
 vg_smooth_grad_time_to_max_plt
 ```
 
@@ -435,13 +432,13 @@ vg_multipath_fitness_plt <- max_org_data %>%
   scale_x_discrete(
     limits = rev(varied_graph_exp_structs)
   ) +
+  scale_y_continuous(
+    limits = c(0, 5.2),
+    breaks = c(0, 1, 2, 3, 4, 5)
+  ) +
   coord_flip() +
   theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
+    legend.position = "none"
   )
 vg_multipath_fitness_plt
 ```
@@ -504,11 +501,7 @@ vg_valleys_plt <- max_org_data %>%
   ) +
   coord_flip() +
   theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
+    legend.position = "none"
   )
 vg_valleys_plt
 ```
@@ -568,18 +561,14 @@ st_smooth_grad_time_to_max_plt <- summary_gen_to_max %>%
   ) +
   coord_flip() +
   theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
+    legend.position = "none"
   )
 st_smooth_grad_time_to_max_plt
 
-ggsave(
-  filename = paste(plot_dir, "st_smooth_grad_time_to_max.pdf", sep = "/"),
-  st_smooth_grad_time_to_max_plt
-)
+# ggsave(
+#   filename = paste(plot_dir, "st_smooth_grad_time_to_max.pdf", sep = "/"),
+#   st_smooth_grad_time_to_max_plt
+# )
 ```
 
 ### Multi-path exploration - Maximum fitness
@@ -625,13 +614,13 @@ st_multipath_fitness_plt <- max_org_data %>%
   scale_x_discrete(
     limits = toroid_exp_structs
   ) +
+  scale_y_continuous(
+    limits = c(0, 5.2),
+    breaks = c(0, 1, 2, 3, 4, 5)
+  ) +
   coord_flip() +
   theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
+    legend.position = "none"
   )
 st_multipath_fitness_plt
 ```
@@ -679,13 +668,13 @@ st_valleys_plt <- max_org_data %>%
   scale_x_discrete(
     limits = toroid_exp_structs
   ) +
+  scale_y_continuous(
+    limits = c(0, 102),
+    breaks = c(0, 25, 50, 75, 100)
+  ) +
   coord_flip() +
   theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
+    legend.position = "none"
   )
 st_valleys_plt
 ```
@@ -700,45 +689,41 @@ Build plot grid for varied graph experiment set.
 vg_plt_grid <- plot_grid(
   vg_smooth_grad_time_to_max_plt +
     labs(
-      # title = "Smooth gradient",
       x = "Graph type",
       y = "Gen. reached\nmax fitness"
     ) +
     theme(
       axis.text.y = element_text(angle = 30, hjust = 1),
+      axis.text.x = element_text(angle = 30, hjust = 1),
       plot.margin = margin(1, 0, 0, 0, "cm")
     ),
   vg_multipath_fitness_plt +
     labs(
-      # title = "Multipath",
-      y = "Final max fitness"
+      y = "Final maximum\nfitness"
     ) +
     theme(
       axis.text.y = element_blank(),
       axis.title.y = element_blank(),
       axis.ticks.y = element_blank(),
-      axis.text.x = element_text(angle = 0, hjust = 1),
       plot.margin = margin(1, 0, 0, 0, "cm")
     ),
   vg_valleys_plt +
     labs(
-      # title = "Valley crossing",
       y = "Valleys crossed"
     ) +
     theme(
       axis.text.y = element_blank(),
       axis.title.y = element_blank(),
       axis.ticks.y = element_blank(),
-      axis.text.x = element_text(angle = 0, hjust = 1),
-      plot.margin = margin(1, 0, 0, 0, "cm")
+      plot.margin = margin(1, 0.2, 0, 0, "cm")
     ),
   nrow = 1,
   ncol = 3,
   align = "h",
   labels = c(
     "A) Gradient landscape",
-    "B) Multipath landscape",
-    "C) Valley crossing landscape"
+    "B) Multi-path landscape",
+    "C) Valley-crossing landscape"
   ),
   label_x = c(0.17, -0.4, -0.48),
   label_size = 11,
@@ -750,7 +735,7 @@ save_plot(
   filename = paste(plot_dir, "combined-vg-exp.pdf", sep = "/"),
   plot = vg_plt_grid,
   base_width = 8,
-  base_height = 4,
+  base_height = 3.5,
   dpi = 600
 )
 ```
@@ -763,22 +748,23 @@ Build plot grid for squished toroid data
 st_plt_grid <- plot_grid(
   st_smooth_grad_time_to_max_plt +
     labs(
-      x = "Lattice configuration",
+      x = "Lattice shape",
       y = "Gen. reached\nmax fitness"
     ) +
     theme(
       axis.text.y = element_text(angle = 30, hjust = 1),
+      axis.text.x = element_text(angle = 30, hjust = 1),
       plot.margin = margin(1, 0, 0, 0, "cm")
     ),
   st_multipath_fitness_plt +
     labs(
-      y = "Final max fitness"
+      y = "Final maximum\nfitness"
     ) +
     theme(
       axis.text.y = element_blank(),
       axis.title.y = element_blank(),
       axis.ticks.y = element_blank(),
-      axis.text.x = element_text(angle = 0, hjust = 1),
+      # axis.text.x = element_text(angle = 0, hjust = 1),
       plot.margin = margin(1, 0, 0, 0, "cm")
     ),
   st_valleys_plt +
@@ -789,7 +775,7 @@ st_plt_grid <- plot_grid(
       axis.text.y = element_blank(),
       axis.title.y = element_blank(),
       axis.ticks.y = element_blank(),
-      axis.text.x = element_text(angle = 0, hjust = 1),
+      # axis.text.x = element_text(angle = 0, hjust = 1),
       plot.margin = margin(1, 0, 0, 0, "cm")
     ),
   nrow = 1,
@@ -797,8 +783,8 @@ st_plt_grid <- plot_grid(
   align = "h",
   labels = c(
     "A) Gradient landscape",
-    "B) Multipath landscape",
-    "C) Valley crossing landscape"
+    "B) Multi-path landscape",
+    "C) Valley-crossing landscape"
   ),
   label_x = c(0.0, -0.36, -0.47),
   label_size = 11,
@@ -809,7 +795,7 @@ save_plot(
   filename = paste(plot_dir, "combined-st-exp.pdf", sep = "/"),
   plot = st_plt_grid,
   base_width = 8,
-  base_height = 3.75,
+  base_height = 3.25,
   dpi = 600
 )
 ```
