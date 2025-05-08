@@ -68,13 +68,13 @@ special_decorators = [
 ]
 
 combos.register_var("spatial_structure__DYNAMIC")
-# 'well-mixed' and 'torroidal-lattice' are handled as special cases
+# 'well-mixed' and 'toroidal-lattice' are handled as special cases
 #  - all others must exist in spatial-structs directory
 combos.add_val(
     "spatial_structure__DYNAMIC",
     [
         "well-mixed",
-        "torroidal-lattice",
+        "toroidal-lattice",
         "comet-kite",
         "linear-chain",
         "clique-ring",
@@ -255,7 +255,7 @@ def main():
 
         cond_struct_files = struct_files[cond_spatial_struct]
         multiple_graphs_for_cond = False
-        if (cond_spatial_struct in {"well-mixed", "torroidal-lattice"}):
+        if (cond_spatial_struct in {"well-mixed", "toroidal-lattice"}):
             cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
         elif len(cond_struct_files) <= 1:
             cmd_line_params["EVENT_FILE"] = f"events_{cond_spatial_struct}.cfg"
@@ -270,7 +270,7 @@ def main():
         event_file_name = "unknown"
         rep_events_str = ""
         graph_file_name = ""
-        if (cond_spatial_struct in {"well-mixed", "torroidal-lattice"}):
+        if (cond_spatial_struct in {"well-mixed", "toroidal-lattice"}):
             # Relying on base avida functionality to implement spatial structure
             # No spatial structure configuration events necessary.
             event_file_name = cmd_line_params["EVENT_FILE"]
