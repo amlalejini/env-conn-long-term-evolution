@@ -49,6 +49,8 @@ def main():
 
     utils.mkdir_p(dump_dir)
 
+    print("Running Moran's i on graphs")
+
     # Load graph_loc data
     graph_loc_data = utils.read_csv(graph_loc_data_path)
     graph_files = list({line["graph_file"] for line in graph_loc_data})
@@ -56,6 +58,7 @@ def main():
     for graph_file in graph_files:
         graph_file_path = os.path.join(graphs_dir, graph_file)
         graphs[graph_file] = gutils.read_graph_matrix(graph_file_path)
+
     # Organize data by run
     data_by_run = {}
     graph_files_by_run = {}
