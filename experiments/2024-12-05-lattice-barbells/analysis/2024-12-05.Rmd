@@ -1,4 +1,5 @@
-# 2025-04-17-vary-structs
+# 2024-12-05 Analysis Code
+
 
 ```{r}
 library(tidyverse)
@@ -12,7 +13,7 @@ source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/f
 ```
 
 ```{r}
-experiment_slug <- "2025-04-17-vary-structs"
+experiment_slug <- "2024-12-05-lattice-barbells"
 working_directory <- paste(
   "experiments",
   experiment_slug,
@@ -47,18 +48,6 @@ dir.create(
 ```
 
 ```{r}
-focal_graphs <- c(
-  "star",
-  "random-waxman",
-  "comet-kite",
-  "linear-chain",
-  "cycle",
-  "clique-ring",
-  "toroidal-lattice",
-  "well-mixed",
-  "wheel"
-)
-
 # Load summary data from final update
 data_path <- paste(
   working_directory,
@@ -73,23 +62,25 @@ data <- data %>%
     graph_type = factor(
       graph_type,
       levels = c(
-        "star",
-        "random-waxman",
-        "comet-kite",
         "linear-chain",
-        "cycle",
-        "clique-ring",
-        "toroidal-lattice",
-        "well-mixed",
-        "wheel"
+        "barbell_lattice10_chain90",
+        "barbell_lattice20_chain80",
+        "barbell_lattice50_chain50",
+        "barbell_lattice80_chain20",
+        "barbell_lattice90_chain10",
+        "toroidal-lattice_60x60"
       )
     ),
     ENVIRONMENT_FILE = as.factor(ENVIRONMENT_FILE)
   )
-data <- data %>% filter(
-  graph_type %in% focal_graphs
-)
-data <- data %>% filter(reached_target_update)
+```
+
+```{r}
+data %>%
+  group_by(graph_type, ENVIRONMENT_FILE) %>%
+  summarize(
+    n = n()
+  )
 ```
 
 ```{r}
@@ -106,34 +97,27 @@ time_series_data <- time_series_data %>%
     graph_type = factor(
       graph_type,
       levels = c(
-        "star",
-        "random-waxman",
-        "comet-kite",
         "linear-chain",
-        "cycle",
-        "clique-ring",
-        "toroidal-lattice",
-        "well-mixed",
-        "wheel"
+        "barbell_lattice10_chain90",
+        "barbell_lattice20_chain80",
+        "barbell_lattice50_chain50",
+        "barbell_lattice80_chain20",
+        "barbell_lattice90_chain10",
+        "toroidal-lattice_60x60"
       )
     ),
     ENVIRONMENT_FILE = as.factor(ENVIRONMENT_FILE),
     seed = as.factor(seed)
   )
-time_series_data <- time_series_data %>% filter(seed %in% data$seed)
-time_series_data <- time_series_data %>% filter(
-  graph_type %in% focal_graphs
-)
 ```
 
 
 ```{r}
-# Check that all runs completed
-data %>%
-  filter(update == 400000) %>%
-  group_by(graph_type) %>%
-  summarize(
-    n = n()
+
+# Grab just completed rows
+completed_runs_data <- data %>%
+  filter(
+    update == 100000
   )
 ```
 
@@ -142,7 +126,7 @@ data %>%
 
 ```{r}
 pop_tasks_total_plt <- ggplot(
-  data = data,
+  data = completed_runs_data,
   mapping = aes(
     x = graph_type,
     y = pop_task_total,
@@ -164,6 +148,7 @@ pop_tasks_total_plt <- ggplot(
     outlier.shape = NA,
     alpha = 0.5
   ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
   theme(
     legend.position = "none",
     axis.text.x = element_text(
@@ -183,28 +168,56 @@ ggsave(
 High-reward data:
 
 ```{r}
+high_rew_data <- filter(
+  completed_runs_data,
+  ENVIRONMENT_FILE == "environment-l77-high.cfg"
+)
+
 kruskal.test(
   formula = pop_task_total ~ graph_type,
-  data = data
+  data = high_rew_data
 )
 
 wc_results <- pairwise.wilcox.test(
-  x = data$pop_task_total,
-  g = data$graph_type,
+  x = high_rew_data$pop_task_total,
+  g = high_rew_data$graph_type,
   p.adjust.method	= "holm",
   exact = FALSE
 
 )
 
 pop_task_wc_table <- kbl(wc_results$p.value) %>% kable_styling()
-save_kable(pop_task_wc_table, paste0(plot_dir, "/pop_task_wc_table.pdf"))
+save_kable(pop_task_wc_table, paste0(plot_dir, "/high_rew_pop_task_wc_table.pdf"))
+```
+Low-reward data
+```{r}
+low_rew_data <- filter(
+  completed_runs_data,
+  ENVIRONMENT_FILE == "environment-l77-low.cfg"
+)
+
+kruskal.test(
+  formula = pop_task_total ~ graph_type,
+  data = low_rew_data
+)
+
+wc_results <- pairwise.wilcox.test(
+  x = low_rew_data$pop_task_total,
+  g = low_rew_data$graph_type,
+  p.adjust.method	= "holm",
+  exact = FALSE
+
+)
+
+pop_task_wc_table <- kbl(wc_results$p.value) %>% kable_styling()
+save_kable(pop_task_wc_table, paste0(plot_dir, "/low_rew_pop_task_wc_table.pdf"))
 ```
 
 ## Dominant tasks
 
 ```{r}
 dom_tasks_total_plt <- ggplot(
-  data = data,
+  data = completed_runs_data,
   mapping = aes(
     x = graph_type,
     y = dom_task_total,
@@ -226,6 +239,7 @@ dom_tasks_total_plt <- ggplot(
     outlier.shape = NA,
     alpha = 0.5
   ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
   theme(
     legend.position = "none",
     axis.text.x = element_text(
@@ -246,13 +260,13 @@ Tasks done by organisms not in dominant taxon:
 
 ```{r}
 nondom_tasks_total_plt <- ggplot(
-    data = data,
-    mapping = aes(
-      x = graph_type,
-      y = (pop_task_total - dom_task_total) / (pop_task_total),
-      fill = graph_type
-    )
-  ) +
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = (pop_task_total - dom_task_total) / (pop_task_total),
+    fill = graph_type
+  )
+) +
   geom_flat_violin(
     position = position_nudge(x = .2, y = 0),
     alpha = .8
@@ -268,6 +282,7 @@ nondom_tasks_total_plt <- ggplot(
     outlier.shape = NA,
     alpha = 0.5
   ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
   theme(
     legend.position = "none",
     axis.text.x = element_text(
@@ -292,17 +307,17 @@ ggsave(
 # )
 ```
 
-## Dominant gestation time
+## MRCA Changes
 
 ```{r}
-dom_gestation_time_plt <- ggplot(
-    data = data,
-    mapping = aes(
-      x = graph_type,
-      y = dom_detail_gestation_time,
-      fill = graph_type
-    )
-  ) +
+mrca_changes_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = phylodiv_mrca_changes,
+    fill = graph_type
+  )
+) +
   geom_flat_violin(
     position = position_nudge(x = .2, y = 0),
     alpha = .8
@@ -318,6 +333,7 @@ dom_gestation_time_plt <- ggplot(
     outlier.shape = NA,
     alpha = 0.5
   ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
   theme(
     legend.position = "none",
     axis.text.x = element_text(
@@ -327,132 +343,8 @@ dom_gestation_time_plt <- ggplot(
   )
 
 ggsave(
-  filename = paste0(plot_dir, "/dom_gestation_time.pdf"),
-  plot = dom_gestation_time_plt,
-  width = 15,
-  height = 10
-)
-```
-
-## Dominant genome length
-
-```{r}
-dom_genome_length_plt <- ggplot(
-    data = data,
-    mapping = aes(
-      x = graph_type,
-      y = dom_detail_genome_length,
-      fill = graph_type
-    )
-  ) +
-  geom_flat_violin(
-    position = position_nudge(x = .2, y = 0),
-    alpha = .8
-  ) +
-  geom_point(
-    mapping=aes(color = graph_type),
-    position = position_jitter(width = .15),
-    size = .5,
-    alpha = 0.8
-  ) +
-  geom_boxplot(
-    width = .1,
-    outlier.shape = NA,
-    alpha = 0.5
-  ) +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
-  )
-
-ggsave(
-  filename = paste0(plot_dir, "/dom_genome_length.pdf"),
-  plot = dom_genome_length_plt,
-  width = 15,
-  height = 10
-)
-```
-
-## Task profile entropy
-
-```{r}
-task_profile_entropy_plt <- ggplot(
-    data = data,
-    mapping = aes(
-      x = graph_type,
-      y = task_profile_entropy,
-      fill = graph_type
-    )
-  ) +
-  geom_flat_violin(
-    position = position_nudge(x = .2, y = 0),
-    alpha = .8
-  ) +
-  geom_point(
-    mapping=aes(color = graph_type),
-    position = position_jitter(width = .15),
-    size = .5,
-    alpha = 0.8
-  ) +
-  geom_boxplot(
-    width = .1,
-    outlier.shape = NA,
-    alpha = 0.5
-  ) +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
-  )
-
-ggsave(
-  filename = paste0(plot_dir, "/task_profile_entropy.pdf"),
-  plot = task_profile_entropy_plt,
-  width = 15,
-  height = 10
-)
-```
-
-```{r}
-task_profile_count_plt <- ggplot(
-    data = data,
-    mapping = aes(
-      x = graph_type,
-      y = task_profile_count,
-      fill = graph_type
-    )
-  ) +
-  geom_flat_violin(
-    position = position_nudge(x = .2, y = 0),
-    alpha = .8
-  ) +
-  geom_point(
-    mapping=aes(color = graph_type),
-    position = position_jitter(width = .15),
-    size = .5,
-    alpha = 0.8
-  ) +
-  geom_boxplot(
-    width = .1,
-    outlier.shape = NA,
-    alpha = 0.5
-  ) +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
-  )
-
-ggsave(
-  filename = paste0(plot_dir, "/task_profile_count.pdf"),
-  plot = task_profile_count_plt,
+  filename = paste0(plot_dir, "/mrca_changes.pdf"),
+  plot = mrca_changes_plt,
   width = 15,
   height = 10
 )
@@ -462,13 +354,13 @@ ggsave(
 
 ```{r}
 avg_generation_plt <- ggplot(
-    data = data,
-    mapping = aes(
-      x = graph_type,
-      y = time_average_generation,
-      fill = graph_type
-    )
-  ) +
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = time_average_generation,
+    fill = graph_type
+  )
+) +
   geom_flat_violin(
     position = position_nudge(x = .2, y = 0),
     alpha = .8
@@ -484,6 +376,7 @@ avg_generation_plt <- ggplot(
     outlier.shape = NA,
     alpha = 0.5
   ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
   theme(
     legend.position = "none",
     axis.text.x = element_text(
@@ -495,6 +388,93 @@ avg_generation_plt <- ggplot(
 ggsave(
   filename = paste0(plot_dir, "/avg_generation.pdf"),
   plot = avg_generation_plt,
+  width = 15,
+  height = 10
+)
+```
+
+
+## Phylogenetic diversity
+<!-- phylodiv_current_phylogenetic_diversity
+phylodiv_diversity -->
+
+```{r}
+cur_phylo_div_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = phylodiv_current_phylogenetic_diversity,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/phylodiv_current_phylogenetic_diversity.pdf"),
+  plot = cur_phylo_div_plt,
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+phylodiv_diversity_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = phylodiv_diversity,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/genotypic_diversity.pdf"),
+  plot = phylodiv_diversity_plt,
   width = 15,
   height = 10
 )
@@ -520,6 +500,7 @@ pop_task_cnt_ts <- ggplot(
     alpha = 0.2,
     linetype = 0
   ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
   theme(legend.position = "bottom")
 
 ggsave(
@@ -565,6 +546,72 @@ ggsave(
 )
 ```
 
+## Diversity over time
+
+```{r}
+phylodiv_diversity_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_diversity,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylodiv_diversity_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylodiv_diversity_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+phylodiv_current_phylogenetic_diversity_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_current_phylogenetic_diversity,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylodiv_current_phylogenetic_diversity_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylodiv_current_phylogenetic_diversity_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
 ## Average generation over time
 
 ```{r}
@@ -599,7 +646,73 @@ ggsave(
 )
 ```
 
+## MRCA changes over time
 
+```{r}
+mrca_changes_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_mrca_changes,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = mrca_changes_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/mrca_changes_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## Average phylo depth over time
+
+```{r}
+phylo_ave_depth_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_ave_depth,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  facet_wrap(~ENVIRONMENT_FILE) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylo_ave_depth_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylo_ave_depth_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
 ## Graph location info
 
 Analyze graph_birth_info_annotated.csv
@@ -619,21 +732,17 @@ graph_loc_data <- graph_loc_data %>%
     graph_type = factor(
       graph_type,
       levels = c(
-        "toroidal-lattice_60x60",
-        "toroidal-lattice_30x120",
-        "toroidal-lattice_15x240",
-        "toroidal-lattice_4x900",
-        "toroidal-lattice_3x1200",
-        "toroidal-lattice_2x1800",
-        "cycle"
+        "linear-chain",
+        "barbell_lattice10_chain90",
+        "barbell_lattice20_chain80",
+        "barbell_lattice50_chain50",
+        "barbell_lattice80_chain20",
+        "barbell_lattice90_chain10",
+        "toroidal-lattice_60x60"
       )
     ),
     seed = as.factor(seed)
-  ) %>%
-  filter(
-    graph_type %in% focal_graphs
   )
-
 ```
 
 Summarize by seed
@@ -653,13 +762,13 @@ graph_loc_data_summary <- graph_loc_data %>%
 
 ```{r}
 birth_counts_total_plt <- ggplot(
-    data = graph_loc_data_summary,
-    mapping = aes(
-      x = graph_type,
-      y = births_total,
-      fill = graph_type
-    )
-  ) +
+  data = graph_loc_data_summary,
+  mapping = aes(
+    x = graph_type,
+    y = births_total,
+    fill = graph_type
+  )
+) +
   geom_flat_violin(
     position = position_nudge(x = .2, y = 0),
     alpha = .8
@@ -695,13 +804,13 @@ ggsave(
 
 ```{r}
 birth_counts_var_plt <- ggplot(
-    data = graph_loc_data_summary,
-    mapping = aes(
-      x = graph_type,
-      y = births_var,
-      fill = graph_type
-    )
-  ) +
+  data = graph_loc_data_summary,
+  mapping = aes(
+    x = graph_type,
+    y = births_var,
+    fill = graph_type
+  )
+) +
   geom_flat_violin(
     position = position_nudge(x = .2, y = 0),
     alpha = .8
@@ -737,13 +846,13 @@ ggsave(
 
 ```{r}
 task_apps_total_plt <- ggplot(
-    data = graph_loc_data_summary,
-    mapping = aes(
-      x = graph_type,
-      y = task_apps_total,
-      fill = graph_type
-    )
-  ) +
+  data = graph_loc_data_summary,
+  mapping = aes(
+    x = graph_type,
+    y = task_apps_total,
+    fill = graph_type
+  )
+) +
   geom_flat_violin(
     position = position_nudge(x = .2, y = 0),
     alpha = .8
@@ -816,19 +925,16 @@ morans_i_data <- morans_i_data %>%
     graph_type = factor(
       graph_type,
       levels = c(
-        "toroidal-lattice_60x60",
-        "toroidal-lattice_30x120",
-        "toroidal-lattice_15x240",
-        "toroidal-lattice_4x900",
-        "toroidal-lattice_3x1200",
+        "cycle",
         "toroidal-lattice_2x1800",
-        "cycle"
+        "toroidal-lattice_3x1200",
+        "toroidal-lattice_4x900",
+        "toroidal-lattice_15x240",
+        "toroidal-lattice_30x120",
+        "toroidal-lattice_60x60"
       )
     ),
     seed = as.factor(seed)
-  ) %>%
-  filter(
-    graph_type %in% focal_graphs
   )
 ```
 
@@ -986,3 +1092,5 @@ ggsave(
   height = 10
 )
 ```
+
+## End

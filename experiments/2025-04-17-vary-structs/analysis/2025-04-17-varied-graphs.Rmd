@@ -1,4 +1,4 @@
-# 2025-04-09-squished-lattice
+# 2025-04-17-vary-structs
 
 ```{r}
 library(tidyverse)
@@ -12,7 +12,7 @@ source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/f
 ```
 
 ```{r}
-experiment_slug <- "2025-04-09-squished-lattice"
+experiment_slug <- "2025-04-17-vary-structs"
 working_directory <- paste(
   "experiments",
   experiment_slug,
@@ -47,6 +47,19 @@ dir.create(
 ```
 
 ```{r}
+focal_graphs <- c(
+  "star",
+  "random-waxman",
+  "comet-kite",
+  "linear-chain",
+  "cycle",
+  "clique-ring",
+  "toroidal-lattice",
+  "well-mixed",
+  "wheel",
+  "windmill"
+)
+
 # Load summary data from final update
 data_path <- paste(
   working_directory,
@@ -61,26 +74,24 @@ data <- data %>%
     graph_type = factor(
       graph_type,
       levels = c(
-        "toroidal-lattice_60x60",
-        "toroidal-lattice_30x120",
-        "toroidal-lattice_15x240",
-        "toroidal-lattice_4x900",
-        "toroidal-lattice_3x1200",
-        "toroidal-lattice_2x1800",
-        "cycle"
+        "star",
+        "random-waxman",
+        "comet-kite",
+        "linear-chain",
+        "cycle",
+        "clique-ring",
+        "toroidal-lattice",
+        "well-mixed",
+        "wheel",
+        "windmill"
       )
     ),
     ENVIRONMENT_FILE = as.factor(ENVIRONMENT_FILE)
   )
-```
-
-```{r}
-# Check that all runs are represented in data
-data %>%
-  group_by(graph_type) %>%
-  summarize(
-    n = n()
-  )
+data <- data %>% filter(
+  graph_type %in% focal_graphs
+)
+data <- data %>% filter(reached_target_update)
 ```
 
 ```{r}
@@ -97,25 +108,32 @@ time_series_data <- time_series_data %>%
     graph_type = factor(
       graph_type,
       levels = c(
-        "toroidal-lattice_60x60",
-        "toroidal-lattice_30x120",
-        "toroidal-lattice_15x240",
-        "toroidal-lattice_4x900",
-        "toroidal-lattice_3x1200",
-        "toroidal-lattice_2x1800",
-        "cycle"
+        "star",
+        "random-waxman",
+        "comet-kite",
+        "linear-chain",
+        "cycle",
+        "clique-ring",
+        "toroidal-lattice",
+        "well-mixed",
+        "wheel",
+        "windmill"
       )
     ),
     ENVIRONMENT_FILE = as.factor(ENVIRONMENT_FILE),
     seed = as.factor(seed)
   )
+time_series_data <- time_series_data %>% filter(seed %in% data$seed)
+time_series_data <- time_series_data %>% filter(
+  graph_type %in% focal_graphs
+)
 ```
 
 
 ```{r}
 # Check that all runs completed
 data %>%
-  filter(update == 100000) %>%
+  filter(update == 400000) %>%
   group_by(graph_type) %>%
   summarize(
     n = n()
@@ -165,7 +183,18 @@ ggsave(
 )
 ```
 
-High-reward data:
+```{r}
+data %>%
+  group_by(graph_type) %>%
+  summarize(
+    reps = n(),
+    median_pop_tasks = median(pop_task_total),
+    mean_pop_tasks = mean(pop_task_total)
+  ) %>%
+  arrange(
+    desc(mean_pop_tasks)
+  )
+```
 
 ```{r}
 kruskal.test(
@@ -178,7 +207,6 @@ wc_results <- pairwise.wilcox.test(
   g = data$graph_type,
   p.adjust.method	= "holm",
   exact = FALSE
-
 )
 
 pop_task_wc_table <- kbl(wc_results$p.value) %>% kable_styling()
@@ -227,14 +255,53 @@ ggsave(
 )
 ```
 
-Tasks done by organisms not in dominant taxon:
+```{r}
+data %>%
+  group_by(graph_type) %>%
+  summarize(
+    reps = n(),
+    median_dom_task_total = median(dom_task_total),
+    mean_dom_task_total = mean(dom_task_total)
+  ) %>%
+  arrange(
+    desc(mean_dom_task_total)
+  )
+```
 
 ```{r}
+kruskal.test(
+  formula = dom_task_total ~ graph_type,
+  data = data
+)
+
+wc_results <- pairwise.wilcox.test(
+  x = data$dom_task_total,
+  g = data$graph_type,
+  p.adjust.method	= "holm",
+  exact = FALSE
+)
+
+dom_task_total_wc_table <- kbl(wc_results$p.value) %>% kable_styling()
+save_kable(dom_task_total_wc_table, paste0(plot_dir, "/dom_task_total_wc_table.pdf"))
+```
+
+Tasks done by organisms not in dominant taxon:
+
+
+```{r}
+data <- data %>%
+  mutate(
+    nondom_pop_task_prop = case_when(
+      pop_task_total == 0 ~ 0,
+      .default = (pop_task_total - dom_task_total) / (pop_task_total)
+    )
+  )
+
 nondom_tasks_total_plt <- ggplot(
     data = data,
     mapping = aes(
       x = graph_type,
-      y = (pop_task_total - dom_task_total) / (pop_task_total),
+      y = nondom_pop_task_prop,
       fill = graph_type
     )
   ) +
@@ -267,6 +334,36 @@ ggsave(
   width = 15,
   height = 10
 )
+```
+
+```{r}
+data %>%
+  group_by(graph_type) %>%
+  summarize(
+    reps = n(),
+    median_nondom_pop_task_prop = median(nondom_pop_task_prop),
+    mean_nondom_pop_task_prop = mean(nondom_pop_task_prop)
+  ) %>%
+  arrange(
+    desc(mean_nondom_pop_task_prop)
+  )
+```
+
+```{r}
+kruskal.test(
+  formula = nondom_pop_task_prop ~ graph_type,
+  data = data
+)
+
+wc_results <- pairwise.wilcox.test(
+  x = data$nondom_pop_task_prop,
+  g = data$graph_type,
+  p.adjust.method	= "holm",
+  exact = FALSE
+)
+
+nondom_pop_task_prop_wc_table <- kbl(wc_results$p.value) %>% kable_styling()
+save_kable(nondom_pop_task_prop_wc_table, paste0(plot_dir, "/nondom_pop_task_prop_wc_table.pdf"))
 ```
 
 
@@ -319,6 +416,36 @@ ggsave(
 )
 ```
 
+```{r}
+data %>%
+  group_by(graph_type) %>%
+  summarize(
+    reps = n(),
+    median_dom_detail_gestation_time = median(dom_detail_gestation_time),
+    mean_dom_detail_gestation_time = mean(dom_detail_gestation_time)
+  ) %>%
+  arrange(
+    desc(mean_dom_detail_gestation_time)
+  )
+```
+
+```{r}
+kruskal.test(
+  formula = dom_detail_gestation_time ~ graph_type,
+  data = data
+)
+
+wc_results <- pairwise.wilcox.test(
+  x = data$dom_detail_gestation_time,
+  g = data$graph_type,
+  p.adjust.method	= "holm",
+  exact = FALSE
+)
+
+dom_detail_gestation_time_wc_table <- kbl(wc_results$p.value) %>% kable_styling()
+save_kable(dom_detail_gestation_time_wc_table, paste0(plot_dir, "/dom_detail_gestation_time_wc_table.pdf"))
+```
+
 ## Dominant genome length
 
 ```{r}
@@ -359,6 +486,36 @@ ggsave(
   width = 15,
   height = 10
 )
+```
+
+```{r}
+data %>%
+  group_by(graph_type) %>%
+  summarize(
+    reps = n(),
+    median_dom_detail_genome_length = median(dom_detail_genome_length),
+    mean_dom_detail_genome_length = mean(dom_detail_genome_length)
+  ) %>%
+  arrange(
+    desc(mean_dom_detail_genome_length)
+  )
+```
+
+```{r}
+kruskal.test(
+  formula = dom_detail_genome_length ~ graph_type,
+  data = data
+)
+
+wc_results <- pairwise.wilcox.test(
+  x = data$dom_detail_genome_length,
+  g = data$graph_type,
+  p.adjust.method	= "holm",
+  exact = FALSE
+)
+
+dom_detail_genome_length_wc_table <- kbl(wc_results$p.value) %>% kable_styling()
+save_kable(dom_detail_genome_length_wc_table, paste0(plot_dir, "/dom_detail_genome_length_wc_table.pdf"))
 ```
 
 ## Task profile entropy
@@ -438,49 +595,6 @@ task_profile_count_plt <- ggplot(
 ggsave(
   filename = paste0(plot_dir, "/task_profile_count.pdf"),
   plot = task_profile_count_plt,
-  width = 15,
-  height = 10
-)
-```
-
-
-## MRCA Changes
-
-```{r}
-mrca_changes_plt <- ggplot(
-    data = data,
-    mapping = aes(
-      x = graph_type,
-      y = phylodiv_mrca_changes,
-      fill = graph_type
-    )
-  ) +
-  geom_flat_violin(
-    position = position_nudge(x = .2, y = 0),
-    alpha = .8
-  ) +
-  geom_point(
-    mapping=aes(color = graph_type),
-    position = position_jitter(width = .15),
-    size = .5,
-    alpha = 0.8
-  ) +
-  geom_boxplot(
-    width = .1,
-    outlier.shape = NA,
-    alpha = 0.5
-  ) +
-  theme(
-    legend.position = "none",
-    axis.text.x = element_text(
-      angle = 30,
-      hjust = 1
-    )
-  )
-
-ggsave(
-  filename = paste0(plot_dir, "/mrca_changes.pdf"),
-  plot = mrca_changes_plt,
   width = 15,
   height = 10
 )
@@ -627,39 +741,6 @@ ggsave(
 )
 ```
 
-## MRCA changes over time
-
-```{r}
-mrca_changes_ts <- ggplot(
-    data = time_series_data,
-    mapping = aes(
-      x = update,
-      y = phylodiv_mrca_changes,
-      color = graph_type,
-      fill = graph_type
-    )
-  ) +
-  stat_summary(fun = "mean", geom = "line") +
-  stat_summary(
-    fun.data = "mean_cl_boot",
-    fun.args = list(conf.int = 0.95),
-    geom = "ribbon",
-    alpha = 0.2,
-    linetype = 0
-  ) +
-  facet_wrap(~ENVIRONMENT_FILE) +
-  theme(legend.position = "bottom")
-
-ggsave(
-  plot = mrca_changes_ts,
-  filename = paste0(
-    working_directory,
-    "/plots/mrca_changes_ts.pdf"
-  ),
-  width = 15,
-  height = 10
-)
-```
 
 ## Graph location info
 
@@ -690,7 +771,11 @@ graph_loc_data <- graph_loc_data %>%
       )
     ),
     seed = as.factor(seed)
+  ) %>%
+  filter(
+    graph_type %in% focal_graphs
   )
+
 ```
 
 Summarize by seed
@@ -883,6 +968,9 @@ morans_i_data <- morans_i_data %>%
       )
     ),
     seed = as.factor(seed)
+  ) %>%
+  filter(
+    graph_type %in% focal_graphs
   )
 ```
 

@@ -1,4 +1,4 @@
-# 2024-10-03 - Analyze Linear Chain Properties
+# 2024-10-15 - Analyze Graph Properties
 
 ```{r}
 library(tidyverse)
@@ -12,7 +12,7 @@ source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/f
 ```
 
 ```{r}
-experiment_slug <- "2024-10-03-linear-chain"
+experiment_slug <- "2024-10-15-barbells"
 working_directory <- paste(
   "experiments",
   experiment_slug,
@@ -62,10 +62,11 @@ graph_birth_data <- read_csv(graph_birth_data_path)
 Load node info data
 
 ```{r}
+graph_name <- "node_info_barbell_clique20_chain80"
 node_info_data_path <- paste(
   working_directory,
   "data",
-  "node_info_linear-chain.csv",
+  paste0(graph_name, ".csv"),
   sep = "/"
 )
 
@@ -84,6 +85,9 @@ graph_birth_plt <- graph_birth_data %>%
   ) +
   geom_density(
     fill="#69b3a2", color="#e9ecef", alpha=0.8
+  ) +
+  facet_wrap(
+    ~graph_type
   )
 
 ggsave(
@@ -104,6 +108,9 @@ graph_birth_log_plt <- graph_birth_data %>%
   ) +
   geom_density(
     fill="#69b3a2", color="#e9ecef", alpha=0.8
+  ) +
+  facet_wrap(
+    ~graph_type
   )
 
 ggsave(
@@ -127,7 +134,7 @@ task_appearances_by_id_plt <- node_info_data %>%
   geom_bar(stat = "identity")
 
 ggsave(
-  filename = paste0(plot_dir, "/task_app_by_id.pdf"),
+  filename = paste0(plot_dir, "/task_app_by_id_", graph_name, ".pdf"),
   plot = task_appearances_by_id_plt,
   width = 20,
   height = 10
@@ -147,7 +154,7 @@ act_births_by_id_plt <- node_info_data %>%
   geom_bar(stat = "identity")
 
 ggsave(
-  filename = paste0(plot_dir, "/act_births_by_id.pdf"),
+  filename = paste0(plot_dir, "/act_births_by_id_", graph_name, ".pdf"),
   plot = act_births_by_id_plt,
   width = 20,
   height = 10
@@ -167,7 +174,7 @@ expected_births_by_id_plt <- node_info_data %>%
   geom_bar(stat = "identity")
 
 ggsave(
-  filename = paste0(plot_dir, "/expected_births_by_id.pdf"),
+  filename = paste0(plot_dir, "/expected_births_by_id_", graph_name, ".pdf"),
   plot = expected_births_by_id_plt,
   width = 20,
   height = 10
@@ -194,33 +201,7 @@ task_appearances_freq_dist_plt <- longer_props %>%
   geom_density(alpha=0.4)
 
 ggsave(
-  filename = paste0(plot_dir, "/all_task_prop_freq_dist_plt.pdf"),
-  plot = task_appearances_freq_dist_plt,
-  width = 20,
-  height = 10
-)
-```
-
-```{r}
-longer_props <- node_info_data %>% pivot_longer(
-  cols = c(all_task_prop, expected_births_prop, actual_births_prop),
-  names_to = "proportion_type",
-  values_to = "proportion"
-)
-
-task_appearances_freq_dist_plt <- longer_props %>%
-  filter(proportion_type != "expected_births_prop") %>%
-  ggplot(
-    aes(
-      x = proportion,
-      group = proportion_type,
-      fill = proportion_type
-    )
-  ) +
-  geom_density(alpha=0.4)
-
-ggsave(
-  filename = paste0(plot_dir, "/all_task_prop_freq_dist_plt2.pdf"),
+  filename = paste0(plot_dir, "/all_task_prop_freq_dist_plt_", graph_name, ".pdf"),
   plot = task_appearances_freq_dist_plt,
   width = 20,
   height = 10
@@ -240,7 +221,8 @@ all_task_prop_vs_expected_births_plt <- node_info_data %>%
   geom_vline(xintercept = 0, color = "black")
 
 ggsave(
-  filename = paste0(plot_dir, "/all_task_prop_vs_expected_births_plt.pdf"),
+  # filename = paste0(plot_dir, "/all_task_prop_vs_expected_births_plt.pdf"),
+  filename = paste0(plot_dir, "/all_task_prop_vs_expected_births_plt_", graph_name, ".pdf"),
   plot = all_task_prop_vs_expected_births_plt,
   width = 20,
   height = 10
@@ -260,69 +242,30 @@ all_task_prop_vs_actual_births_plt <- node_info_data %>%
   geom_vline(xintercept = 0, color = "black")
 
 ggsave(
-  filename = paste0(plot_dir, "/all_task_prop_vs_actual_births_plt.pdf"),
+  # filename = paste0(plot_dir, "/all_task_prop_vs_actual_births_plt.pdf"),
+  filename = paste0(plot_dir, "/all_task_prop_vs_actual_births_plt_", graph_name, ".pdf"),
   plot = all_task_prop_vs_actual_births_plt,
   width = 20,
   height = 10
 )
 ```
 
-## All task prop vs ?? (correlation)
 
-```{r}
-all_task_prop_vs_actual_births_cor_plt <- node_info_data %>%
-  ggplot(
-    aes(
-      x = actual_births_prop,
-      y = all_task_prop
-    )
-  ) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y~x)
-
-
-ggsave(
-  filename = paste0(plot_dir, "/all_task_prop_vs_actual_births_cor.pdf"),
-  plot = all_task_prop_vs_actual_births_cor_plt,
-  width = 20,
-  height = 10
-)
-```
-
-```{r}
-all_task_prop_vs_expected_births_cor_plt <- node_info_data %>%
-  ggplot(
-    aes(
-      x = expected_births_prop,
-      y = all_task_prop
-    )
-  ) +
-  geom_point() +
-  geom_smooth(method = "lm", formula = y~x)
-
-
-ggsave(
-  filename = paste0(plot_dir, "/all_task_prop_vs_expected_births_cor_plt.pdf"),
-  plot = all_task_prop_vs_expected_births_cor_plt,
-  width = 20,
-  height = 10
-)
-```
 
 ```{r}
 property_data_long <- node_info_data %>%
   pivot_longer(
     cols = c(
-      percolation_centrality,
-      harmonic_centrality,
-      subgraph_centrality,
-      eigenvector_centrality,
-      load_centrality,
-      second_order_centrality,
-      triangles,
-      closeness_centrality,
-      information_centrality,
-      clustering,
+      # percolation_centrality,
+      # harmonic_centrality,
+      # subgraph_centrality,
+      # eigenvector_centrality,
+      # load_centrality,
+      # second_order_centrality,
+      # triangles,
+      # closeness_centrality,
+      # information_centrality,
+      # clustering,
       degree,
       actual_births_prop,
       expected_births_prop
@@ -343,7 +286,7 @@ plt <- property_data_long %>%
   facet_wrap(~node_property, scales = "free")
 
 ggsave(
-  filename = paste0(plot_dir, "/node_properties_cor.pdf"),
+  filename = paste0(plot_dir, "/node_properties_cor_", graph_name, ".pdf"),
   plot = plt,
   width = 20,
   height = 20
@@ -393,7 +336,10 @@ disagg_expected_births_vs_task_apps <- graph_birth_data %>%
     )
   ) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x)
+  geom_smooth(method = "lm", formula = y ~ x) +
+  facet_wrap(
+    ~graph_type
+  )
 
 
 ggsave(
@@ -414,7 +360,10 @@ disagg_births_vs_task_apps <- graph_birth_data %>%
     )
   ) +
   geom_point() +
-  geom_smooth(method = "lm", formula = y ~ x)
+  geom_smooth(method = "lm", formula = y ~ x) +
+  facet_wrap(
+    ~graph_type
+  )
 
 
 ggsave(

@@ -1,0 +1,703 @@
+# 2024-10-15 Analysis Code
+
+
+```{r}
+library(tidyverse)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+library(kableExtra)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+experiment_slug <- "2024-10-15-barbells"
+working_directory <- paste(
+  "experiments",
+  experiment_slug,
+  "analysis",
+  sep = "/"
+)
+# Adjust working directory if being knitted for bookdown build.
+if (exists("bookdown")) {
+  if (bookdown) {
+    working_directory <- paste0(
+      bookdown_wd_prefix,
+      working_directory
+    )
+  }
+}
+```
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_dir <- paste(
+  working_directory,
+  "plots",
+  # "10k",
+  sep = "/"
+)
+
+dir.create(
+  plot_dir,
+  showWarnings = FALSE
+)
+```
+
+```{r}
+
+# Load summary data from final update
+data_path <- paste(
+  working_directory,
+  "data",
+  "summary.csv",
+  sep = "/"
+)
+data <- read_csv(data_path)
+
+data <- data %>%
+  mutate(
+    graph_type = as.factor(graph_type)
+  )
+```
+
+```{r}
+time_series_path <- paste(
+  working_directory,
+  "data",
+  "time_series.csv",
+  sep = "/"
+)
+time_series_data <- read_csv(time_series_path)
+
+time_series_data <- time_series_data %>%
+  mutate(
+    graph_type = as.factor(graph_type),
+    seed = as.factor(seed)
+  )
+```
+
+
+```{r}
+
+# Grab just completed rows
+completed_runs_data <- data %>%
+  filter(
+    update == 200000
+  )
+```
+
+
+## Number of tasks completed
+
+```{r}
+pop_tasks_total_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = pop_task_total,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/pop_tasks_total.pdf"),
+  plot = pop_tasks_total_plt,
+  width = 15,
+  height = 10
+)
+```
+
+
+```{r}
+kruskal.test(
+  formula = pop_task_total ~ graph_type,
+  data = filter(completed_runs_data)
+)
+
+# wc_results <- dplyr::filter(completed_runs_data, graph_type != "star") %>%
+#   rstatix::pairwise_wilcox_test(
+#     formula = pop_task_total ~ graph_type,
+#     exact = FALSE
+# )
+  # adjust_pvalue(method = "holm") %>%
+  # add_significance("p.adj")
+
+pairwise.wilcox.test(
+  x = completed_runs_data$pop_task_total,
+  g = completed_runs_data$graph_type,
+  p.adjust.method	= "holm",
+  exact = FALSE
+
+)
+```
+
+## Dominant tasks
+
+```{r}
+dom_tasks_total_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = dom_task_total,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/dom_tasks_total.pdf"),
+  plot = dom_tasks_total_plt,
+  width = 15,
+  height = 10
+)
+```
+
+## Number of Equals
+
+```{r}
+num_equals_data <- completed_runs_data %>%
+  group_by(
+    graph_type
+  ) %>%
+  summarize(
+    num_pop_equals = sum(pop_task_equals),
+    no_pop_equals = n() - sum(pop_task_equals)
+  )
+
+num_equals_table <- kbl(num_equals_data) %>% kable_styling()
+save_kable(num_equals_table, paste0(plot_dir, "/num_equals_table.pdf"))
+
+fisher_results <- num_equals_data %>%
+  select(
+    graph_type, num_pop_equals, no_pop_equals
+  ) %>%
+  column_to_rownames(
+    var = "graph_type"
+  ) %>%
+  pairwise_fisher_test(
+    p.adjust.method = "holm",
+  )
+
+fisher_table <- kbl(fisher_results) %>% kable_styling()
+save_kable(fisher_table, paste0(plot_dir, "/pop_equals_stats.pdf"))
+```
+
+## MRCA Changes
+
+```{r}
+mrca_changes_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = phylodiv_mrca_changes,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/mrca_changes.pdf"),
+  plot = mrca_changes_plt,
+  width = 15,
+  height = 10
+)
+```
+
+## Average generation
+
+```{r}
+avg_generation_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = time_average_generation,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/avg_generation.pdf"),
+  plot = avg_generation_plt,
+  width = 15,
+  height = 10
+)
+```
+
+## Average generations per sweep
+
+```{r}
+avg_gens_per_sweep_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = time_average_generation / phylodiv_mrca_changes,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/avg_gens_per_mrca_change.pdf"),
+  plot = avg_gens_per_sweep_plt,
+  width = 15,
+  height = 10
+)
+```
+
+## Phylogenetic diversity
+<!-- phylodiv_current_phylogenetic_diversity
+phylodiv_diversity -->
+
+```{r}
+cur_phylo_div_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = phylodiv_current_phylogenetic_diversity,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/phylodiv_current_phylogenetic_diversity.pdf"),
+  plot = cur_phylo_div_plt,
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+phylodiv_diversity_plt <- ggplot(
+  data = completed_runs_data,
+  mapping = aes(
+    x = graph_type,
+    y = phylodiv_diversity,
+    fill = graph_type
+  )
+) +
+  geom_flat_violin(
+    position = position_nudge(x = .2, y = 0),
+    alpha = .8
+  ) +
+  geom_point(
+    mapping=aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .1,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  theme(
+    legend.position = "none",
+    axis.text.x = element_text(
+      angle = 30,
+      hjust = 1
+    )
+  )
+
+ggsave(
+  filename = paste0(plot_dir, "/genotypic_diversity.pdf"),
+  plot = phylodiv_diversity_plt,
+  width = 15,
+  height = 10
+)
+```
+
+## Population task count over time
+
+```{r}
+pop_task_cnt_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = pop_task_total_tasks_done,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = pop_task_cnt_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/pop_tasks_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+pop_task_cnt_ts <- ggplot(
+    data = filter(time_series_data, update <= 10000),
+    mapping = aes(
+      x = update,
+      y = pop_task_total_tasks_done,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = pop_task_cnt_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/pop_tasks_ts_10k.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## Diversity over time
+
+```{r}
+phylodiv_diversity_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_diversity,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylodiv_diversity_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylodiv_diversity_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+phylodiv_current_phylogenetic_diversity_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_current_phylogenetic_diversity,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylodiv_current_phylogenetic_diversity_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylodiv_current_phylogenetic_diversity_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## Average generation over time
+
+
+```{r}
+time_average_generation_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = time_average_generation,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = time_average_generation_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/time_average_generation_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## MRCA changes over time
+
+```{r}
+mrca_changes_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_mrca_changes,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = mrca_changes_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/mrca_changes_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+```{r}
+mrca_changes_ts <- ggplot(
+    data = filter(
+      time_series_data,
+      update >= 150000 & update <= 200000
+    ),
+    mapping = aes(
+      x = update,
+      y = phylodiv_mrca_changes,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = mrca_changes_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/mrca_changes_ts_mod.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
+
+## MRCA changes over time
+
+```{r}
+phylo_ave_depth_ts <- ggplot(
+    data = time_series_data,
+    mapping = aes(
+      x = update,
+      y = phylodiv_ave_depth,
+      color = graph_type,
+      fill = graph_type
+    )
+  ) +
+  stat_summary(fun = "mean", geom = "line") +
+  stat_summary(
+    fun.data = "mean_cl_boot",
+    fun.args = list(conf.int = 0.95),
+    geom = "ribbon",
+    alpha = 0.2,
+    linetype = 0
+  ) +
+  theme(legend.position = "bottom")
+
+ggsave(
+  plot = phylo_ave_depth_ts,
+  filename = paste0(
+    working_directory,
+    "/plots/phylo_ave_depth_ts.pdf"
+  ),
+  width = 15,
+  height = 10
+)
+```
