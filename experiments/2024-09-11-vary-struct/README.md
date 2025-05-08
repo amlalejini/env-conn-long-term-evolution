@@ -17,3 +17,8 @@ Directory guide:
 - `graphs.json` defines graphs to be generated for this experiment.
   - Note that we don't define well-mixed or toroidal lattice graphs in this way. Instead, we use Avida's built-in "well-mixed" and toroidal lattice options for those particular structures.
 - `local-job-gen.sh` generates slurm files locally. Used for testing experiment setup locally. Not to be used on HPC.
+
+
+Notes for next experiment:
+- Level out rewards so that there are fewer weird effects of number of generations elapsed?
+-
