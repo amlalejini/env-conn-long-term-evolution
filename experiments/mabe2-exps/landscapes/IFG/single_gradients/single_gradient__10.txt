@@ -1,0 +1,4 @@
+add, start, 1
+
+add, end, 10
+connect, start, end, 1000

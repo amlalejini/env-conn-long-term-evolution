@@ -1,0 +1,16 @@
+add, start, 1
+
+add, P0, 100
+connect, start, P0, 1000
+
+add, P1, 200
+connect, start, P1, 1000
+
+add, P2, 300
+connect, start, P2, 1000
+
+add, P3, 400
+connect, start, P3, 1000
+
+add, P4, 500
+connect, start, P4, 1000
