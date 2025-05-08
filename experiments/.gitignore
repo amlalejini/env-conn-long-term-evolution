@@ -5,6 +5,6 @@ events/
 param_snapshots/
 
 !*.cfg
-./*/hpc/config/analyze.cfg
+analyze.cfg
 MABE
 avida
