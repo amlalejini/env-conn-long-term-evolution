@@ -3,6 +3,7 @@ test/
 spatial-structs/
 events/
 param_snapshots/
+data/
 
 !*.cfg
 analyze.cfg
