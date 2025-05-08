@@ -1,0 +1,349 @@
+```{r}
+library(tidyverse)
+library(cowplot)
+library(RColorBrewer)
+library(khroma)
+library(rstatix)
+library(knitr)
+library(kableExtra)
+source("https://gist.githubusercontent.com/benmarwick/2a1bb0133ff568cbe28d/raw/fb53bd97121f7f9ce947837ef1a4c65a73bffb3f/geom_flat_violin.R")
+```
+
+```{r}
+experiment_slug <- "2025-04-avida-manuscript-fig"
+working_directory <- paste(
+  "experiments",
+  experiment_slug,
+  sep = "/"
+)
+# Adjust working directory if being knitted for bookdown build.
+if (exists("bookdown")) {
+  if (bookdown) {
+    working_directory <- paste0(
+      bookdown_wd_prefix,
+      working_directory
+    )
+  }
+}
+```
+
+```{r}
+# Configure our default graphing theme
+theme_set(theme_cowplot())
+# Create a directory to store plots
+plot_dir <- paste(
+  working_directory,
+  "plots",
+  sep = "/"
+)
+
+dir.create(
+  plot_dir,
+  showWarnings = FALSE
+)
+```
+
+Load st data
+
+```{r}
+st_focal_graphs <- c(
+  "toroidal-lattice_60x60",
+  "toroidal-lattice_15x240",
+  "toroidal-lattice_2x1800",
+  "cycle"
+)
+
+# Load summary data from final update
+st_data_path <- paste(
+  "experiments",
+  "2025-04-17-squished-lattice-longer",
+  "analysis",
+  "data",
+  "summary.csv",
+  sep = "/"
+)
+st_data <- read_csv(st_data_path)
+
+st_data <- st_data %>%
+  filter(graph_type %in% st_focal_graphs) %>%
+  mutate(
+    graph_type = factor(
+      graph_type,
+      levels = c(
+        "toroidal-lattice_60x60",
+        "toroidal-lattice_30x120",
+        "toroidal-lattice_15x240",
+        "toroidal-lattice_4x900",
+        "toroidal-lattice_3x1200",
+        "toroidal-lattice_2x1800",
+        "cycle"
+      ),
+      labels = c(
+        "60x60",
+        "30x120",
+        "15x240",
+        "4x900",
+        "3x1200",
+        "2x1800",
+        "1x3600"
+      )
+    ),
+    ENVIRONMENT_FILE = as.factor(ENVIRONMENT_FILE)
+  )
+```
+
+Load vg data
+
+```{r}
+vg_focal_graphs <- c(
+  "star",
+  "random-waxman",
+  "comet-kite",
+  "linear-chain",
+  "cycle",
+  "clique-ring",
+  "toroidal-lattice",
+  "well-mixed",
+  "wheel",
+  "windmill"
+)
+
+vg_labels <- c(
+  "Well-mixed",
+  "Comet-kite",
+  "Windmill",
+  "Clique ring",
+  "Cycle",
+  "Linear chain",
+  "Lattice",
+  "Random Waxman",
+  "Star",
+  "Wheel"
+)
+
+# Load summary data from final update
+vg_data_path <- paste(
+  "experiments",
+  "2025-04-17-vary-structs",
+  "analysis",
+  "data",
+  "summary.csv",
+  sep = "/"
+)
+vg_data <- read_csv(vg_data_path)
+
+vg_data <- vg_data %>%
+  filter(
+    graph_type %in% vg_focal_graphs
+  ) %>%
+  mutate(
+    graph_type = factor(
+      graph_type,
+      levels = c(
+        "well-mixed",
+        "comet-kite",
+        "windmill",
+        "clique-ring",
+        "cycle",
+        "linear-chain",
+        "toroidal-lattice",
+        "random-waxman",
+        "star",
+        "wheel"
+      ),
+      labels = vg_labels
+    ),
+    ENVIRONMENT_FILE = as.factor(ENVIRONMENT_FILE)
+  )
+# vg_data <- vg_data %>%
+# vg_data <- vg_data %>% filter(reached_target_update)
+```
+
+Varied graph experiment figure
+
+```{r}
+vg_wm_median <- median(
+  filter(
+    vg_data,
+    (graph_type == "Well-mixed")
+  )$pop_task_total
+)
+
+vg_clr_pal <- scale_color_discreterainbow()$palette(
+  length(levels(vg_data$graph_type))
+)
+
+vg_wm_color <- vg_clr_pal[1]
+hline_width <- 0.66
+
+vg_pop_task_plt <- vg_data %>%
+  ggplot(
+    mapping = aes(
+      x = graph_type,
+      y = pop_task_total,
+      fill = graph_type
+    )
+  ) +
+  # geom_flat_violin(
+  #   position = position_nudge(x = .2, y = 0),
+  #   alpha = .8
+  # ) +
+  geom_point(
+    mapping = aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .3,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  geom_hline(
+    yintercept = vg_wm_median,
+    color = vg_wm_color,
+    linetype = "dashed",
+    linewidth = hline_width
+  ) +
+  scale_color_manual(
+    values = vg_clr_pal
+  ) +
+  scale_fill_manual(
+    values = vg_clr_pal
+  ) +
+  scale_x_discrete(
+    limits = rev(vg_labels)
+  ) +
+  scale_y_continuous(
+    limits = c(-1, 78),
+    breaks = c(0, 20, 40, 60, 77),
+    labels = c(0, 20, 40, 60, 77)
+  ) +
+  coord_flip() +
+  theme(
+    legend.position = "none"
+  )
+vg_pop_task_plt
+```
+
+Squished toroid figure
+
+```{r}
+
+base_st_clr_pal <- scale_color_bright()$palette(7)
+st_clr_pal <- c(
+  base_st_clr_pal[1],
+  base_st_clr_pal[2],
+  base_st_clr_pal[5],
+  base_st_clr_pal[7]
+)
+
+st_labels <- c(
+  "60x60",
+  "15x240",
+  "2x1800",
+  "1x3600"
+)
+
+st_pop_task_plt <- st_data %>%
+  ggplot(
+    mapping = aes(
+      x = graph_type,
+      y = pop_task_total,
+      fill = graph_type
+    )
+  ) +
+  # geom_flat_violin(
+  #   position = position_nudge(x = .2, y = 0),
+  #   alpha = .8
+  # ) +
+  geom_point(
+    mapping = aes(color = graph_type),
+    position = position_jitter(width = .15),
+    size = .5,
+    alpha = 0.8
+  ) +
+  geom_boxplot(
+    width = .3,
+    outlier.shape = NA,
+    alpha = 0.5
+  ) +
+  scale_color_manual(
+    values = rev(st_clr_pal)
+  ) +
+  scale_fill_manual(
+    values = rev(st_clr_pal)
+  ) +
+  scale_x_discrete(
+    limits = rev(st_labels)
+  ) +
+  scale_y_continuous(
+    limits = c(-1, 78),
+    breaks = c(0, 20, 40, 60, 77),
+    labels = c(0, 20, 40, 60, 77)
+  ) +
+  coord_flip() +
+  theme(
+    legend.position = "none"
+  )
+st_pop_task_plt
+```
+
+Combined figure
+
+```{r}
+plt_grid <- plot_grid(
+  vg_pop_task_plt +
+    labs(
+      x = "Graph type",
+      y = "Tasks evolved"
+    ) +
+    theme(
+      axis.title.y = element_text(
+        size = 12,
+        margin = margin(r = 0, t = 0, b = 0, l = 6)
+      ),
+      axis.text.y = element_text(
+        size = 10,
+        angle = 30,
+        hjust = 1
+      ),
+      axis.text.x = element_blank(),
+      axis.ticks.x = element_blank(),
+      axis.title.x = element_blank(),
+      plot.margin = margin(0.2, 0, 0, 0.5, "cm")
+    ),
+  st_pop_task_plt +
+    labs(
+      x = "Lattice shape",
+      y = "Tasks evolved"
+    ) +
+    theme(
+      axis.title.y = element_text(
+        size = 12,
+        margin = margin(r = 0, t = 0, b = 0, l = 6)
+      ),
+      axis.text.y = element_text(
+        size = 10,
+        angle = 30,
+        hjust = 1
+      ),
+      axis.title.x = element_text(size = 12),
+      axis.text.x = element_text(size = 12),
+      plot.margin = margin(0.2, 0, 0, 0.5, "cm")
+    ),
+  nrow = 2,
+  ncol = 1,
+  align = "v",
+  labels = c("A)", "B)"),
+  rel_heights = c(1.4, 1)
+)
+plt_grid
+save_plot(
+  filename = paste(plot_dir, "combined-avida-exp.pdf", sep = "/"),
+  plot = plt_grid,
+  base_width = 4,
+  base_height = 3.5,
+  dpi = 600
+)
+```
